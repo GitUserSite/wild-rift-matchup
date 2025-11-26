@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* You can add extra global styles below if you want */
+* {
+  box-sizing: border-box;
+}
