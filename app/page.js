@@ -37,7 +37,9 @@ export default function WildRiftMatchupApp() {
       comparePrev: "Compare with previous patch",
       hidePrev: "Hide previous patch",
       communityScore: "Community score",
-      previousPatchScore: "Previous patch score",
+      previousPatchScore: "Previous patch score (counters)",
+      bestSynergyLabel: "Best synergy",
+      countersAndSynergiesLabel: "Counters & Synergies",
       noCounterData: "No counter data yet.",
       noPreviousPatchData: "No previous patch data.",
     },
@@ -59,7 +61,9 @@ export default function WildRiftMatchupApp() {
       comparePrev: "Comparar con parche anterior",
       hidePrev: "Ocultar parche anterior",
       communityScore: "Puntuación de la comunidad",
-      previousPatchScore: "Puntuación parche anterior",
+      previousPatchScore: "Puntuación parche anterior (counters)",
+      bestSynergyLabel: "Mejor sinergia",
+      countersAndSynergiesLabel: "Counters y sinergias",
       noCounterData: "Aún no hay datos de counters.",
       noPreviousPatchData: "Sin datos del parche anterior.",
     },
@@ -81,7 +85,9 @@ export default function WildRiftMatchupApp() {
       comparePrev: "Сравнить с прошлым патчем",
       hidePrev: "Скрыть прошлый патч",
       communityScore: "Оценка сообщества",
-      previousPatchScore: "Оценка прошлого патча",
+      previousPatchScore: "Оценка прошлого патча (контрпики)",
+      bestSynergyLabel: "Лучшая синергия",
+      countersAndSynergiesLabel: "Контрпики и синергии",
       noCounterData: "Пока нет данных о контрпиках.",
       noPreviousPatchData: "Нет данных прошлого патча.",
     },
@@ -103,7 +109,9 @@ export default function WildRiftMatchupApp() {
       comparePrev: "与上个版本对比",
       hidePrev: "隐藏上个版本",
       communityScore: "玩家评分",
-      previousPatchScore: "上个版本评分",
+      previousPatchScore: "上个版本评分（克制）",
+      bestSynergyLabel: "最佳配合",
+      countersAndSynergiesLabel: "克制与配合",
       noCounterData: "暂无克制数据。",
       noPreviousPatchData: "暂无上个版本数据。",
     },
@@ -125,11 +133,12 @@ export default function WildRiftMatchupApp() {
       comparePrev: "قارن مع التحديث السابق",
       hidePrev: "إخفاء التحديث السابق",
       communityScore: "تقييم المجتمع",
-      previousPatchScore: "تقييم التحديث السابق",
+      previousPatchScore: "تقييم التحديث السابق (الكونترات)",
+      bestSynergyLabel: "أفضل تناغم",
+      countersAndSynergiesLabel: "الكونترات والتناغمات",
       noCounterData: "لا توجد بيانات حتى الآن.",
       noPreviousPatchData: "لا توجد بيانات للتحديث السابق.",
     },
-  };
 
   const t = translations[selectedLang] || translations.EN;
 
@@ -587,7 +596,7 @@ export default function WildRiftMatchupApp() {
             </div>
             <div>
               <div className="text-sm uppercase tracking-[0.2em] text-slate-400">
-                {t.countersLabel}
+                {t.countersAndSynergiesLabel}
               </div>
               <div
                 className={`text-xl font-semibold ${
@@ -631,7 +640,7 @@ export default function WildRiftMatchupApp() {
               <div className="flex justify-between items-baseline text-[11px] text-slate-400 mb-1 px-1">
                 <span>{t.countersLabel}</span>
                 <span>
-                  {showPreviousPatch ? t.previousPatchScore : "Best synergy"}
+                  {showPreviousPatch ? t.previousPatchScore : t.bestSynergyLabel}
                 </span>
               </div>
   
