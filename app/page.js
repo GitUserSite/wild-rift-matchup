@@ -784,7 +784,9 @@ export default function WildRiftMatchupApp() {
   return (
     <div
       className={`min-h-screen flex flex-col ${
-        theme === "dark" ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"
+        theme === "dark"
+        ? "bg-slate-950 text-slate-100 app-dark"
+        : "bg-slate-50 text-slate-900 app-light"
       }`}
     >
       {renderTopBar()}
