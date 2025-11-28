@@ -298,6 +298,15 @@ export default function WildRiftMatchupApp() {
 
   const idOf = (name) => championIdByName[name];
 
+  const buildDefaultMatchups = () =>
+    champions.reduce((acc, champ) => {
+      const counters = champions
+        .filter((c) => c.id !== champ.id)
+        .map((c) => ({ id: c.id, name: c.name, baseScore: 0 }));
+
+      return { ...acc, [champ.id]: counters };
+    }, {});
+
   // --- IMAGE SETUP ---
   // You provided numeric IDs that map to champion icons:
   // 64  - Lee Sin
@@ -346,62 +355,10 @@ export default function WildRiftMatchupApp() {
 
   // Very simple placeholder matchup data (who counters whom) – current patch
   // baseScore = higher means better counter
-  const matchupData = {
-    [idOf("Ahri")]: [
-      { id: idOf("Garen"), name: "Garen", baseScore: 6 },
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 4 },
-      { id: idOf("Thresh"), name: "Thresh", baseScore: 2 },
-    ],
-    [idOf("Garen")]: [
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 7 },
-      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 3 },
-      { id: idOf("Ahri"), name: "Ahri", baseScore: 1 },
-    ],
-    [idOf("Lee Sin")]: [
-      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 5 },
-      { id: idOf("Thresh"), name: "Thresh", baseScore: 4 },
-      { id: idOf("Garen"), name: "Garen", baseScore: 2 },
-    ],
-    [idOf("Kai'Sa")]: [
-      { id: idOf("Thresh"), name: "Thresh", baseScore: 6 },
-      { id: idOf("Garen"), name: "Garen", baseScore: 3 },
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 1 },
-    ],
-    [idOf("Thresh")]: [
-      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 6 },
-      { id: idOf("Ahri"), name: "Ahri", baseScore: 3 },
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 2 },
-    ],
-  };
+  const matchupData = buildDefaultMatchups();
 
   // Placeholder previous patch data – can be the same or slightly different
-  const previousMatchupData = {
-    [idOf("Ahri")]: [
-      { id: idOf("Garen"), name: "Garen", baseScore: 5 },
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 5 },
-      { id: idOf("Thresh"), name: "Thresh", baseScore: 3 },
-    ],
-    [idOf("Garen")]: [
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 6 },
-      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 4 },
-      { id: idOf("Ahri"), name: "Ahri", baseScore: 2 },
-    ],
-    [idOf("Lee Sin")]: [
-      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 4 },
-      { id: idOf("Thresh"), name: "Thresh", baseScore: 4 },
-      { id: idOf("Garen"), name: "Garen", baseScore: 3 },
-    ],
-    [idOf("Kai'Sa")]: [
-      { id: idOf("Thresh"), name: "Thresh", baseScore: 7 },
-      { id: idOf("Garen"), name: "Garen", baseScore: 2 },
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 1 },
-    ],
-    [idOf("Thresh")]: [
-      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 5 },
-      { id: idOf("Ahri"), name: "Ahri", baseScore: 4 },
-      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 2 },
-    ],
-  };
+  const previousMatchupData = buildDefaultMatchups();
 
   const filteredChampions = champions.filter((champ) => {
     const matchesLane =
