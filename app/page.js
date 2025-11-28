@@ -139,7 +139,8 @@ export default function WildRiftMatchupApp() {
       noCounterData: "لا توجد بيانات حتى الآن.",
       noPreviousPatchData: "لا توجد بيانات للتحديث السابق.",
     },
-
+  };
+    
   const t = translations[selectedLang] || translations.EN;
 
   // Roles (labels come from translations)
