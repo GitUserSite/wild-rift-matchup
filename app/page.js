@@ -292,6 +292,12 @@ export default function WildRiftMatchupApp() {
     { id: 143, name: "Zyra", roles: ["SUPPORT", "MID"] },
   ];
 
+  const championIdByName = Object.fromEntries(
+    champions.map(({ name, id }) => [name, id])
+  );
+
+  const idOf = (name) => championIdByName[name];
+
   // --- IMAGE SETUP ---
   // You provided numeric IDs that map to champion icons:
   // 64  - Lee Sin
