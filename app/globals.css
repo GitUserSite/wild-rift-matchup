@@ -4,3 +4,22 @@
 * {
   box-sizing: border-box;
 }
+
+.scroll-column {
+  scrollbar-width: thin;
+  scrollbar-color: #475569 #020617;
+}
+
+.scroll-column::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-column::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+.scroll-column::-webkit-scrollbar-thumb {
+  background-color: #475569;
+  border-radius: 9999px;
+  border: 2px solid #020617;
+}
