@@ -341,59 +341,59 @@ export default function WildRiftMatchupApp() {
   // Very simple placeholder matchup data (who counters whom) – current patch
   // baseScore = higher means better counter
   const matchupData = {
-    1: [ // Ahri
-      { id: 2, name: "Garen", baseScore: 6 },
-      { id: 3, name: "Lee Sin", baseScore: 4 },
-      { id: 5, name: "Thresh", baseScore: 2 },
+    [idOf("Ahri")]: [
+      { id: idOf("Garen"), name: "Garen", baseScore: 6 },
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 4 },
+      { id: idOf("Thresh"), name: "Thresh", baseScore: 2 },
     ],
-    2: [ // Garen
-      { id: 3, name: "Lee Sin", baseScore: 7 },
-      { id: 4, name: "Kai'Sa", baseScore: 3 },
-      { id: 1, name: "Ahri", baseScore: 1 },
+    [idOf("Garen")]: [
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 7 },
+      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 3 },
+      { id: idOf("Ahri"), name: "Ahri", baseScore: 1 },
     ],
-    3: [ // Lee Sin
-      { id: 4, name: "Kai'Sa", baseScore: 5 },
-      { id: 5, name: "Thresh", baseScore: 4 },
-      { id: 2, name: "Garen", baseScore: 2 },
+    [idOf("Lee Sin")]: [
+      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 5 },
+      { id: idOf("Thresh"), name: "Thresh", baseScore: 4 },
+      { id: idOf("Garen"), name: "Garen", baseScore: 2 },
     ],
-    4: [ // Kai'Sa
-      { id: 5, name: "Thresh", baseScore: 6 },
-      { id: 2, name: "Garen", baseScore: 3 },
-      { id: 3, name: "Lee Sin", baseScore: 1 },
+    [idOf("Kai'Sa")]: [
+      { id: idOf("Thresh"), name: "Thresh", baseScore: 6 },
+      { id: idOf("Garen"), name: "Garen", baseScore: 3 },
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 1 },
     ],
-    5: [ // Thresh
-      { id: 4, name: "Kai'Sa", baseScore: 6 },
-      { id: 1, name: "Ahri", baseScore: 3 },
-      { id: 3, name: "Lee Sin", baseScore: 2 },
+    [idOf("Thresh")]: [
+      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 6 },
+      { id: idOf("Ahri"), name: "Ahri", baseScore: 3 },
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 2 },
     ],
   };
 
   // Placeholder previous patch data – can be the same or slightly different
   const previousMatchupData = {
-    1: [
-      { id: 2, name: "Garen", baseScore: 5 },
-      { id: 3, name: "Lee Sin", baseScore: 5 },
-      { id: 5, name: "Thresh", baseScore: 3 },
+    [idOf("Ahri")]: [
+      { id: idOf("Garen"), name: "Garen", baseScore: 5 },
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 5 },
+      { id: idOf("Thresh"), name: "Thresh", baseScore: 3 },
     ],
-    2: [
-      { id: 3, name: "Lee Sin", baseScore: 6 },
-      { id: 4, name: "Kai'Sa", baseScore: 4 },
-      { id: 1, name: "Ahri", baseScore: 2 },
+    [idOf("Garen")]: [
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 6 },
+      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 4 },
+      { id: idOf("Ahri"), name: "Ahri", baseScore: 2 },
     ],
-    3: [
-      { id: 4, name: "Kai'Sa", baseScore: 4 },
-      { id: 5, name: "Thresh", baseScore: 4 },
-      { id: 2, name: "Garen", baseScore: 3 },
+    [idOf("Lee Sin")]: [
+      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 4 },
+      { id: idOf("Thresh"), name: "Thresh", baseScore: 4 },
+      { id: idOf("Garen"), name: "Garen", baseScore: 3 },
     ],
-    4: [
-      { id: 5, name: "Thresh", baseScore: 7 },
-      { id: 2, name: "Garen", baseScore: 2 },
-      { id: 3, name: "Lee Sin", baseScore: 1 },
+    [idOf("Kai'Sa")]: [
+      { id: idOf("Thresh"), name: "Thresh", baseScore: 7 },
+      { id: idOf("Garen"), name: "Garen", baseScore: 2 },
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 1 },
     ],
-    5: [
-      { id: 4, name: "Kai'Sa", baseScore: 5 },
-      { id: 1, name: "Ahri", baseScore: 4 },
-      { id: 3, name: "Lee Sin", baseScore: 2 },
+    [idOf("Thresh")]: [
+      { id: idOf("Kai'Sa"), name: "Kai'Sa", baseScore: 5 },
+      { id: idOf("Ahri"), name: "Ahri", baseScore: 4 },
+      { id: idOf("Lee Sin"), name: "Lee Sin", baseScore: 2 },
     ],
   };
 
