@@ -5,21 +5,42 @@
   box-sizing: border-box;
 }
 
-.scroll-column {
-  scrollbar-width: thin;
-  scrollbar-color: #475569 #020617;
+/* Dark-friendly scrollbars only in dark theme */
+.app-dark .scroll-column {
+  scrollbar-width: thin;               /* Firefox */
+  scrollbar-color: #475569 #020617;    /* thumb, track */
 }
 
-.scroll-column::-webkit-scrollbar {
+.app-dark .scroll-column::-webkit-scrollbar {
   width: 8px;
 }
 
-.scroll-column::-webkit-scrollbar-track {
-  background: #020617;
+.app-dark .scroll-column::-webkit-scrollbar-track {
+  background: #020617;                 /* bg-slate-950 */
 }
 
-.scroll-column::-webkit-scrollbar-thumb {
-  background-color: #475569;
+.app-dark .scroll-column::-webkit-scrollbar-thumb {
+  background-color: #475569;           /* slate-600 */
   border-radius: 9999px;
-  border: 2px solid #020617;
+  border: 2px solid #020617;           /* match track */
+}
+
+/* Lighter scrollbars in light theme */
+.app-light .scroll-column {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #e5e7eb;    /* thumb, track */
+}
+
+.app-light .scroll-column::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-light .scroll-column::-webkit-scrollbar-track {
+  background: #e5e7eb;                 /* slate-200-ish */
+}
+
+.app-light .scroll-column::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;           /* slate-400 */
+  border-radius: 9999px;
+  border: 2px solid #e5e7eb;
 }
