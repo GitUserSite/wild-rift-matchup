@@ -11,6 +11,7 @@ export default function WildRiftMatchupApp() {
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
   const [votes, setVotes] = React.useState({}); // {"champId-counterId": diff}
+  const [synergyVotes, setSynergyVotes] = React.useState({});
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
 
@@ -303,12 +304,6 @@ export default function WildRiftMatchupApp() {
     cdragonId: champ.id ?? -1,//championIconIds[champ.name] ?? champ.id,
   }));
 
-  /*const championIdByName = Object.fromEntries(
-    champions.map(({ name, id }) => [name, id])
-  );
-
-  const idOf = (name) => championIdByName[name];*/
-
   const buildDefaultMatchups = () =>
     champions.reduce((acc, champ) => {
       const counters = champions
@@ -388,6 +383,30 @@ export default function WildRiftMatchupApp() {
         };
       })
       .sort((a, b) => b.score - a.score); // highest score (best counter) on top
+  };
+
+  const handleSynergyVote = (champId, allyId, direction) => {
+    const key = `synergy-${champId}-${allyId}`;
+    setSynergyVotes((prev) => {
+      const current = prev[key] || 0;
+      const delta = direction === "up" ? 1 : -1;
+      return { ...prev, [key]: current + delta };
+    });
+  };
+  
+  const getSynergiesForChampion = (champ) => {
+    if (!champ) return [];
+    const list = matchupData[champ.id] || [];
+    return [...list]
+      .map((item) => {
+        const key = `synergy-${champ.id}-${item.id}`;
+        const diff = synergyVotes[key] || 0;
+        return {
+          ...item,
+          score: item.baseScore + diff,
+      };
+    })
+    .sort((a, b) => b.score - a.score);
   };
 
   const getPreviousCountersForChampion = (champ) => {
@@ -519,10 +538,11 @@ export default function WildRiftMatchupApp() {
 
   const renderChampionCounters = () => {
     if (!selectedChampion) return null;
-
+  
     const counters = getCountersForChampion(selectedChampion);
     const previousCounters = getPreviousCountersForChampion(selectedChampion);
-
+    const synergies = getSynergiesForChampion(selectedChampion);
+  
     const championMainName = getChampionMainName(
       selectedChampion.name,
       selectedLang
@@ -532,7 +552,7 @@ export default function WildRiftMatchupApp() {
       selectedLang
     );
     const championIcon = getChampionIcon(selectedChampion);
-
+  
     return (
       <main className="flex-1 flex flex-col px-4 sm:px-8 pb-8 max-w-4xl w-full mx-auto">
         {/* Back button */}
@@ -546,7 +566,7 @@ export default function WildRiftMatchupApp() {
           <span className="text-lg">←</span>
           <span>{t.backToChampions}</span>
         </button>
-
+  
         {/* Champion header */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-3">
@@ -578,7 +598,7 @@ export default function WildRiftMatchupApp() {
               </div>
             </div>
           </div>
-
+  
           {/* Patch info & compare link */}
           <div className="flex flex-col items-end text-right text-[11px] sm:text-xs">
             <div className="uppercase tracking-[0.16em] text-slate-500 mb-0.5">
@@ -594,8 +614,8 @@ export default function WildRiftMatchupApp() {
             </button>
           </div>
         </div>
-
-        {/* Counter list */}
+  
+        {/* Counter + synergy list */}
         <section
           className={`mt-2 flex-1 rounded-2xl p-3 sm:p-4 border
             ${theme === "dark" ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200"}
@@ -606,177 +626,377 @@ export default function WildRiftMatchupApp() {
               {t.noCounterData}
             </div>
           ) : (
-            <div className="max-h-[60vh] flex flex-col sm:flex-row gap-3 sm:gap-4">
-              {/* Current patch column */}
-              <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
-                {counters.map((counter, index) => {
-                  const counterMainName = getChampionMainName(
-                    counter.name,
-                    selectedLang
-                  );
-                  const counterDisplayName = getChampionDisplayName(
-                    counter.name,
-                    selectedLang
-                  );
-                  const counterIcon = getChampionIcon(counter);
-
-                  return (
-                    <div
-                      key={`current-${counter.id}`}
-                      className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
-                        ${theme === "dark"
-                          ? "bg-slate-950/60 border-slate-800"
-                          : "bg-slate-50 border-slate-200"}
-                      `}
-                    >
-                      {/* Rank number */}
-                      <div className="w-6 text-xs text-slate-500 text-right">
-                        #{index + 1}
-                      </div>
-
-                      {/* Icon + name */}
-                      <div className="flex items-center gap-2 flex-1">
-                        <div
-                          className={`h-8 w-8 rounded-xl border overflow-hidden flex items-center justify-center text-[11px] font-semibold
-                            ${theme === "dark" ? "bg-slate-900 border-slate-700" : "bg-slate-100 border-slate-300"}
-                          `}
-                        >
-                          {counterIcon ? (
-                            <img
-                              src={counterIcon}
-                              alt={counterDisplayName}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <span>{counterMainName[0]}</span>
-                          )}
-                        </div>
-                        <div className="flex flex-col">
-                          <span
-                            className={`font-medium text-xs sm:text-sm ${
-                              theme === "dark" ? "text-slate-50" : "text-slate-900"
-                            }`}
-                          >
-                            {counterDisplayName}
-                          </span>
-                          <span className="text-[11px] text-slate-500">
-                            {t.communityScore}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Score + vote buttons */}
-                      <div className="flex items-center gap-1">
-                        <span
-                          className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
-                            theme === "dark" ? "text-slate-100" : "text-slate-900"
-                          }`}
-                        >
-                          {counter.score}
-                        </span>
-                        <div className="flex flex-col gap-0.5">
-                          <button
-                            onClick={() =>
-                              handleVote(selectedChampion.id, counter.id, "up")
-                            }
-                            className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                          >
-                            ▲
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleVote(selectedChampion.id, counter.id, "down")
-                            }
-                            className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                          >
-                            ▼
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+            <>
+              {/* Column labels (top row) */}
+              <div className="flex justify-between items-baseline text-[11px] text-slate-400 mb-1 px-1">
+                <span>{t.countersLabel}</span>
+                <span>
+                  {showPreviousPatch ? t.previousPatchScore : "Best synergy"}
+                </span>
               </div>
-
-              {/* Previous patch column */}
-              {showPreviousPatch && (
-                <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
-                  {previousCounters.length === 0 ? (
-                    <div className="text-sm text-slate-400 text-center py-6">
-                      {t.noPreviousPatchData}
-                    </div>
-                  ) : (
-                    previousCounters.map((counter, index) => {
-                      const counterMainName = getChampionMainName(
-                        counter.name,
-                        selectedLang
-                      );
-                      const counterDisplayName = getChampionDisplayName(
-                        counter.name,
-                        selectedLang
-                      );
-                      const counterIcon = getChampionIcon(counter);
-
-                      return (
-                        <div
-                          key={`previous-${counter.id}`}
-                          className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border opacity-80
-                            ${theme === "dark"
-                              ? "bg-slate-950/40 border-slate-800"
-                              : "bg-slate-50 border-slate-200"}
-                          `}
-                        >
-                          {/* Rank number */}
-                          <div className="w-6 text-xs text-slate-500 text-right">
-                            #{index + 1}
-                          </div>
-
-                          {/* Icon + name */}
-                          <div className="flex items-center gap-2 flex-1">
-                            <div
-                              className={`h-8 w-8 rounded-xl border overflow-hidden flex items-center justify-center text-[11px] font-semibold
-                                ${theme === "dark"
-                                  ? "bg-slate-900 border-slate-700"
-                                  : "bg-slate-100 border-slate-300"}
-                              `}
-                            >
-                              {counterIcon ? (
-                                <img
-                                  src={counterIcon}
-                                  alt={counterDisplayName}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <span>{counterMainName[0]}</span>
-                              )}
+  
+              <div className="max-h-[60vh] flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {/* MODE 1: Counters + Synergy (default) */}
+                {!showPreviousPatch && (
+                  <>
+                    {/* Current counters column */}
+                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
+                      {counters.map((counter, index) => {
+                        const counterMainName = getChampionMainName(
+                          counter.name,
+                          selectedLang
+                        );
+                        const counterDisplayName = getChampionDisplayName(
+                          counter.name,
+                          selectedLang
+                        );
+                        const counterIcon = getChampionIcon(counter);
+  
+                        return (
+                          <div
+                            key={`current-${counter.id}`}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
+                              ${theme === "dark"
+                                ? "bg-slate-950/60 border-slate-800"
+                                : "bg-slate-50 border-slate-200"}
+                            `}
+                          >
+                            {/* Rank number */}
+                            <div className="w-6 text-xs text-slate-500 text-right">
+                              #{index + 1}
                             </div>
-                            <div className="flex flex-col">
+  
+                            {/* Icon + name */}
+                            <div className="flex items-center gap-2 flex-1">
+                              <div
+                                className={`h-8 w-8 rounded-xl border overflow-hidden flex items-center justify-center text-[11px] font-semibold
+                                  ${theme === "dark" ? "bg-slate-900 border-slate-700" : "bg-slate-100 border-slate-300"}
+                                `}
+                              >
+                                {counterIcon ? (
+                                  <img
+                                    src={counterIcon}
+                                    alt={counterDisplayName}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{counterMainName[0]}</span>
+                                )}
+                              </div>
+                              <div className="flex flex-col">
+                                <span
+                                  className={`font-medium text-xs sm:text-sm ${
+                                    theme === "dark" ? "text-slate-50" : "text-slate-900"
+                                  }`}
+                                >
+                                  {counterDisplayName}
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  {t.communityScore}
+                                </span>
+                              </div>
+                            </div>
+  
+                            {/* Score + vote buttons */}
+                            <div className="flex items-center gap-1">
                               <span
-                                className={`font-medium text-xs sm:text-sm ${
-                                  theme === "dark" ? "text-slate-50" : "text-slate-900"
+                                className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
+                                  theme === "dark" ? "text-slate-100" : "text-slate-900"
                                 }`}
                               >
-                                {counterDisplayName}
+                                {counter.score}
                               </span>
-                              <span className="text-[11px] text-slate-500">
-                                {t.previousPatchScore}
-                              </span>
+                              <div className="flex flex-col gap-0.5">
+                                <button
+                                  onClick={() =>
+                                    handleVote(selectedChampion.id, counter.id, "up")
+                                  }
+                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleVote(selectedChampion.id, counter.id, "down")
+                                  }
+                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+                                >
+                                  ▼
+                                </button>
+                              </div>
                             </div>
                           </div>
-
-                          {/* Score (no voting buttons) */}
-                          <div className="flex items-center">
-                            <span className="text-xs sm:text-sm font-semibold tabular-nums text-slate-300">
-                              {counter.baseScore}
-                            </span>
+                        );
+                      })}
+                    </div>
+  
+                    {/* Synergy column */}
+                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
+                      {synergies.map((ally, index) => {
+                        const allyMainName = getChampionMainName(
+                          ally.name,
+                          selectedLang
+                        );
+                        const allyDisplayName = getChampionDisplayName(
+                          ally.name,
+                          selectedLang
+                        );
+                        const allyIcon = getChampionIcon(ally);
+  
+                        return (
+                          <div
+                            key={`synergy-${ally.id}`}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
+                              ${theme === "dark"
+                                ? "bg-slate-950/60 border-slate-800"
+                                : "bg-slate-50 border-slate-200"}
+                            `}
+                          >
+                            {/* Rank number */}
+                            <div className="w-6 text-xs text-slate-500 text-right">
+                              #{index + 1}
+                            </div>
+  
+                            {/* Icon + name */}
+                            <div className="flex items-center gap-2 flex-1">
+                              <div
+                                className={`h-8 w-8 rounded-xl border overflow-hidden flex items-center justify-center text-[11px] font-semibold
+                                  ${theme === "dark" ? "bg-slate-900 border-slate-700" : "bg-slate-100 border-slate-300"}
+                                `}
+                              >
+                                {allyIcon ? (
+                                  <img
+                                    src={allyIcon}
+                                    alt={allyDisplayName}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{allyMainName[0]}</span>
+                                )}
+                              </div>
+                              <div className="flex flex-col">
+                                <span
+                                  className={`font-medium text-xs sm:text-sm ${
+                                    theme === "dark" ? "text-slate-50" : "text-slate-900"
+                                  }`}
+                                >
+                                  {allyDisplayName}
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  {t.communityScore}
+                                </span>
+                              </div>
+                            </div>
+  
+                            {/* Score + vote buttons */}
+                            <div className="flex items-center gap-1">
+                              <span
+                                className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
+                                  theme === "dark" ? "text-slate-100" : "text-slate-900"
+                                }`}
+                              >
+                                {ally.score}
+                              </span>
+                              <div className="flex flex-col gap-0.5">
+                                <button
+                                  onClick={() =>
+                                    handleSynergyVote(selectedChampion.id, ally.id, "up")
+                                  }
+                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleSynergyVote(selectedChampion.id, ally.id, "down")
+                                  }
+                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+                                >
+                                  ▼
+                                </button>
+                              </div>
+                            </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+  
+                {/* MODE 2: Compare with previous patch (current counters + previous counters) */}
+                {showPreviousPatch && (
+                  <>
+                    {/* Current patch column (same as before) */}
+                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
+                      {counters.map((counter, index) => {
+                        const counterMainName = getChampionMainName(
+                          counter.name,
+                          selectedLang
+                        );
+                        const counterDisplayName = getChampionDisplayName(
+                          counter.name,
+                          selectedLang
+                        );
+                        const counterIcon = getChampionIcon(counter);
+  
+                        return (
+                          <div
+                            key={`current-${counter.id}`}
+                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
+                              ${theme === "dark"
+                                ? "bg-slate-950/60 border-slate-800"
+                                : "bg-slate-50 border-slate-200"}
+                            `}
+                          >
+                            {/* Rank number */}
+                            <div className="w-6 text-xs text-slate-500 text-right">
+                              #{index + 1}
+                            </div>
+  
+                            {/* Icon + name */}
+                            <div className="flex items-center gap-2 flex-1">
+                              <div
+                                className={`h-8 w-8 rounded-xl border overflow-hidden flex items-center justify-center text-[11px] font-semibold
+                                  ${theme === "dark" ? "bg-slate-900 border-slate-700" : "bg-slate-100 border-slate-300"}
+                                `}
+                              >
+                                {counterIcon ? (
+                                  <img
+                                    src={counterIcon}
+                                    alt={counterDisplayName}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <span>{counterMainName[0]}</span>
+                                )}
+                              </div>
+                              <div className="flex flex-col">
+                                <span
+                                  className={`font-medium text-xs sm:text-sm ${
+                                    theme === "dark" ? "text-slate-50" : "text-slate-900"
+                                  }`}
+                                >
+                                  {counterDisplayName}
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  {t.communityScore}
+                                </span>
+                              </div>
+                            </div>
+  
+                            {/* Score + vote buttons */}
+                            <div className="flex items-center gap-1">
+                              <span
+                                className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
+                                  theme === "dark" ? "text-slate-100" : "text-slate-900"
+                                }`}
+                              >
+                                {counter.score}
+                              </span>
+                              <div className="flex flex-col gap-0.5">
+                                <button
+                                  onClick={() =>
+                                    handleVote(selectedChampion.id, counter.id, "up")
+                                  }
+                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+                                >
+                                  ▲
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleVote(selectedChampion.id, counter.id, "down")
+                                  }
+                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+                                >
+                                  ▼
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+  
+                    {/* Previous patch column (read-only) */}
+                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
+                      {previousCounters.length === 0 ? (
+                        <div className="text-sm text-slate-400 text-center py-6">
+                          {t.noPreviousPatchData}
                         </div>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-            </div>
+                      ) : (
+                        previousCounters.map((counter, index) => {
+                          const counterMainName = getChampionMainName(
+                            counter.name,
+                            selectedLang
+                          );
+                          const counterDisplayName = getChampionDisplayName(
+                            counter.name,
+                            selectedLang
+                          );
+                          const counterIcon = getChampionIcon(counter);
+  
+                          return (
+                            <div
+                              key={`previous-${counter.id}`}
+                              className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border opacity-80
+                                ${theme === "dark"
+                                  ? "bg-slate-950/40 border-slate-800"
+                                  : "bg-slate-50 border-slate-200"}
+                              `}
+                            >
+                              {/* Rank number */}
+                              <div className="w-6 text-xs text-slate-500 text-right">
+                                #{index + 1}
+                              </div>
+  
+                              {/* Icon + name */}
+                              <div className="flex items-center gap-2 flex-1">
+                                <div
+                                  className={`h-8 w-8 rounded-xl border overflow-hidden flex items-center justify-center text-[11px] font-semibold
+                                    ${theme === "dark"
+                                      ? "bg-slate-900 border-slate-700"
+                                      : "bg-slate-100 border-slate-300"}
+                                  `}
+                                >
+                                  {counterIcon ? (
+                                    <img
+                                      src={counterIcon}
+                                      alt={counterDisplayName}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <span>{counterMainName[0]}</span>
+                                  )}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span
+                                    className={`font-medium text-xs sm:text-sm ${
+                                      theme === "dark" ? "text-slate-50" : "text-slate-900"
+                                    }`}
+                                  >
+                                    {counterDisplayName}
+                                  </span>
+                                  <span className="text-[11px] text-slate-500">
+                                    {t.previousPatchScore}
+                                  </span>
+                                </div>
+                              </div>
+  
+                              {/* Score (no voting buttons) */}
+                              <div className="flex items-center">
+                                <span className="text-xs sm:text-sm font-semibold tabular-nums text-slate-300">
+                                  {counter.baseScore}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </>
           )}
         </section>
       </main>
