@@ -298,7 +298,7 @@ export default function WildRiftMatchupApp() {
   const champions = championBaseList.map((champ) => ({
     ...champ,
   // Use special override if we have it, otherwise fall back to champ.id
-    cdragonId: : champ.id ?? -1,//championIconIds[champ.name] ?? champ.id,
+    cdragonId: champ.id ?? -1,//championIconIds[champ.name] ?? champ.id,
   }));
 
   /*const championIdByName = Object.fromEntries(
