@@ -142,8 +142,18 @@ export default function WildRiftMatchupApp() {
     { id: "SUPPORT" },
   ];
 
+  const championIconIds = {
+    Ahri: 103,
+    Garen: 86,
+    "Lee Sin": 64,
+    "Kai'Sa": 145,
+    Thresh: 412,
+  };
+
+  const COMMUNITY_DRAGON_BASE = "https://raw.communitydragon.org/latest";
+
   // Champion base list (English / canonical names)
-  const champions = [
+  const championBaseList = [
     { id: 266, name: "Aatrox", roles: ["TOP", "JUNGLE"] },
     { id: 103, name: "Ahri", roles: ["MID"] },
     { id: 84, name: "Akali", roles: ["MID", "TOP"] },
@@ -292,6 +302,11 @@ export default function WildRiftMatchupApp() {
     { id: 143, name: "Zyra", roles: ["SUPPORT", "MID"] },
   ];
 
+  const champions = championBaseList.map((champ) => ({
+    ...champ,
+    cdragonId: championIconIds[champ.name],
+  }));
+
   const championIdByName = Object.fromEntries(
     champions.map(({ name, id }) => [name, id])
   );
@@ -302,36 +317,19 @@ export default function WildRiftMatchupApp() {
     champions.reduce((acc, champ) => {
       const counters = champions
         .filter((c) => c.id !== champ.id)
-        .map((c) => ({ id: c.id, name: c.name, baseScore: 0 }));
+        .map((c) => ({
+          id: c.id,
+          name: c.name,
+          baseScore: 0,
+          cdragonId: c.cdragonId,
+        }));
 
       return { ...acc, [champ.id]: counters };
     }, {});
 
-  // --- IMAGE SETUP ---
-  // You provided numeric IDs that map to champion icons:
-  // 64  - Lee Sin
-  // 86  - Garen
-  // 103 - Ahri
-  // 145 - Kai'Sa
-  // 412 - Thresh
-  // -1  - placeholder when an image is missing or corrupt
-  //
-  // In your real project, place these files for example in /public/champions
-  // and keep the same numeric filenames:
-  // /public/champions/64.png, 86.png, 103.png, 145.png, 412.png, -1.png
-
-  const championIcons = {
-    Ahri: "/champions/103.png",
-    Garen: "/champions/86.png",
-    "Lee Sin": "/champions/64.png",
-    "Kai'Sa": "/champions/145.png",
-    Thresh: "/champions/412.png",
-  };
-
-  const placeholderIcon = "/champions/-1.png";
-
-  const getChampionIcon = (englishName) => {
-    return championIcons[englishName] || placeholderIcon;
+  const getChampionIcon = (champion) => {
+    const cdragonId = champion?.cdragonId ?? -1;
+    return `${COMMUNITY_DRAGON_BASE}/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${cdragonId}.png`;
   };
 
   const getChampionMainName = (englishName, lang) => {
@@ -486,7 +484,7 @@ export default function WildRiftMatchupApp() {
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
           {filteredChampions.map((champ) => {
             const displayName = getChampionDisplayName(champ.name, selectedLang);
-            const iconSrc = getChampionIcon(champ.name);
+            const iconSrc = getChampionIcon(champ);
 
             return (
               <button
@@ -537,7 +535,7 @@ export default function WildRiftMatchupApp() {
       selectedChampion.name,
       selectedLang
     );
-    const championIcon = getChampionIcon(selectedChampion.name);
+    const championIcon = getChampionIcon(selectedChampion);
 
     return (
       <main className="flex-1 flex flex-col px-4 sm:px-8 pb-8 max-w-4xl w-full mx-auto">
@@ -624,7 +622,7 @@ export default function WildRiftMatchupApp() {
                     counter.name,
                     selectedLang
                   );
-                  const counterIcon = getChampionIcon(counter.name);
+                  const counterIcon = getChampionIcon(counter);
 
                   return (
                     <div
@@ -721,7 +719,7 @@ export default function WildRiftMatchupApp() {
                         counter.name,
                         selectedLang
                       );
-                      const counterIcon = getChampionIcon(counter.name);
+                      const counterIcon = getChampionIcon(counter);
 
                       return (
                         <div
