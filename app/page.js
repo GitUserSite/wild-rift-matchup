@@ -142,17 +142,10 @@ export default function WildRiftMatchupApp() {
     { id: "SUPPORT" },
   ];
 
-  const championIconIds = {
-    Ahri: 103,
-    Garen: 86,
-    "Lee Sin": 64,
-    "Kai'Sa": 145,
-    Thresh: 412,
-  };
-
   const COMMUNITY_DRAGON_BASE = "https://raw.communitydragon.org/latest";
 
-  // Champion base list (English / canonical names)
+  // Champion base list (English / canonical names) 
+  // The ones aren't in Wild RIft yet, are commented out
   const championBaseList = [
     { id: 266, name: "Aatrox", roles: ["TOP", "JUNGLE"] },
     { id: 103, name: "Ahri", roles: ["MID"] },
@@ -160,9 +153,9 @@ export default function WildRiftMatchupApp() {
     { id: 166, name: "Akshan", roles: ["MID"] },
     { id: 12, name: "Alistar", roles: ["SUPPORT"] },
     { id: 32, name: "Amumu", roles: ["TOP", "JUNGLE", "SUPPORT"] },
-    { id: 34, name: "Anivia", roles: ["MID"] },
+    //{ id: 34, name: "Anivia", roles: ["MID"] },
     { id: 1, name: "Annie", roles: ["MID"] },
-    { id: 523, name: "Aphelios", roles: ["ADC"] },
+    //{ id: 523, name: "Aphelios", roles: ["ADC"] },
     { id: 22, name: "Ashe", roles: ["ADC", "SUPPORT"] },
     { id: 136, name: "Aurelion Sol", roles: ["MID"] },
     { id: 432, name: "Bard", roles: ["SUPPORT"] },
@@ -171,7 +164,7 @@ export default function WildRiftMatchupApp() {
     { id: 201, name: "Braum", roles: ["SUPPORT"] },
     { id: 51, name: "Caitlyn", roles: ["ADC"] },
     { id: 164, name: "Camille", roles: ["TOP", "JUNGLE"] },
-    { id: 31, name: "Cho'Gath", roles: ["TOP"] },
+    //{ id: 31, name: "Cho'Gath", roles: ["TOP"] },
     { id: 42, name: "Corki", roles: ["ADC", "MID"] },
     { id: 122, name: "Darius", roles: ["TOP", "JUNGLE"] },
     { id: 131, name: "Diana", roles: ["MID", "TOP", "JUNGLE"] },
@@ -184,7 +177,7 @@ export default function WildRiftMatchupApp() {
     { id: 114, name: "Fiora", roles: ["TOP"] },
     { id: 105, name: "Fizz", roles: ["MID", "TOP", "JUNGLE"] },
     { id: 3, name: "Galio", roles: ["MID", "SUPPORT"] },
-    { id: 41, name: "Gangplank", roles: ["TOP"] },
+    //{ id: 41, name: "Gangplank", roles: ["TOP"] },
     { id: 86, name: "Garen", roles: ["TOP"] },
     { id: 79, name: "Gragas", roles: ["TOP", "JUNGLE"] },
     { id: 104, name: "Graves", roles: ["TOP", "JUNGLE"] },
@@ -202,7 +195,7 @@ export default function WildRiftMatchupApp() {
     { id: 145, name: "Kai'Sa", roles: ["ADC"] },
     { id: 429, name: "Kalista", roles: ["ADC"] },
     { id: 43, name: "Karma", roles: ["SUPPORT", "MID"] },
-    { id: 30, name: "Karthus", roles: ["JUNGLE"] },
+    //{ id: 30, name: "Karthus", roles: ["JUNGLE"] },
     { id: 38, name: "Kassadin", roles: ["MID", "TOP"] },
     { id: 55, name: "Katarina", roles: ["MID"] },
     { id: 10, name: "Kayle", roles: ["TOP", "MID"] },
@@ -210,7 +203,7 @@ export default function WildRiftMatchupApp() {
     { id: 85, name: "Kennen", roles: ["TOP", "MID"] },
     { id: 121, name: "Kha'Zix", roles: ["JUNGLE"] },
     { id: 203, name: "Kindred", roles: ["JUNGLE"] },
-    { id: 7, name: "LeBlanc", roles: ["MID"] },
+    //{ id: 7, name: "LeBlanc", roles: ["MID"] },
     { id: 64, name: "Lee Sin", roles: ["JUNGLE"] },
     { id: 876, name: "Lillia", roles: ["JUNGLE"] },
     { id: 89, name: "Leona", roles: ["SUPPORT"] },
@@ -247,29 +240,29 @@ export default function WildRiftMatchupApp() {
     { id: 68, name: "Rumble", roles: ["TOP"] },
     { id: 13, name: "Ryze", roles: ["MID"] },
     { id: 360, name: "Samira", roles: ["ADC"] },
-    { id: 113, name: "Sejuani", roles: ["JUNGLE"] },
+    //{ id: 113, name: "Sejuani", roles: ["JUNGLE"] },
     { id: 235, name: "Senna", roles: ["SUPPORT", "ADC"] },
     { id: 147, name: "Seraphine", roles: ["SUPPORT", "MID"] },
     { id: 875, name: "Sett", roles: ["TOP"] },
-    { id: 35, name: "Shaco", roles: ["JUNGLE"] },
+    //{ id: 35, name: "Shaco", roles: ["JUNGLE"] },
     { id: 98, name: "Shen", roles: ["TOP", "JUNGLE"] },
     { id: 102, name: "Shyvana", roles: ["JUNGLE"] },
     { id: 27, name: "Singed", roles: ["TOP"] },
     { id: 14, name: "Sion", roles: ["TOP", "JUNGLE"] },
     { id: 15, name: "Sivir", roles: ["ADC"] },
-    { id: 72, name: "Skarner", roles: ["JUNGLE"] },
+    //{ id: 72, name: "Skarner", roles: ["JUNGLE"] },
     { id: 37, name: "Sona", roles: ["SUPPORT"] },
     { id: 16, name: "Soraka", roles: ["SUPPORT"] },
     { id: 50, name: "Swain", roles: ["MID", "SUPPORT"] },
-    { id: 517, name: "Sylas", roles: ["MID"] },
+    //{ id: 517, name: "Sylas", roles: ["MID"] },
     { id: 134, name: "Syndra", roles: ["MID"] },
-    { id: 223, name: "Tahm Kench", roles: ["SUPPORT"] },
+    //{ id: 223, name: "Tahm Kench", roles: ["SUPPORT"] },
     { id: 91, name: "Talon", roles: ["MID", "JUNGLE"] },
-    { id: 44, name: "Taric", roles: ["SUPPORT"] },
+    //{ id: 44, name: "Taric", roles: ["SUPPORT"] },
     { id: 17, name: "Teemo", roles: ["TOP", "MID"] },
     { id: 412, name: "Thresh", roles: ["SUPPORT"] },
     { id: 18, name: "Tristana", roles: ["ADC"] },
-    { id: 48, name: "Trundle", roles: ["TOP", "JUNGLE"] },
+    //{ id: 48, name: "Trundle", roles: ["TOP", "JUNGLE"] },
     { id: 23, name: "Tryndamere", roles: ["TOP", "JUNGLE"] },
     { id: 4, name: "Twisted Fate", roles: ["MID"] },
     { id: 29, name: "Twitch", roles: ["ADC", "JUNGLE"] },
@@ -287,13 +280,13 @@ export default function WildRiftMatchupApp() {
     { id: 19, name: "Warwick", roles: ["TOP", "JUNGLE"] },
     { id: 62, name: "Wukong", roles: ["TOP", "JUNGLE"] },
     { id: 498, name: "Xayah", roles: ["ADC"] },
-    { id: 101, name: "Xerath", roles: ["MID"] },
+    //{ id: 101, name: "Xerath", roles: ["MID"] },
     { id: 5, name: "Xin Zhao", roles: ["JUNGLE"] },
     { id: 157, name: "Yasuo", roles: ["MID", "TOP"] },
     { id: 777, name: "Yone", roles: ["MID", "TOP"] },
-    { id: 83, name: "Yorick", roles: ["TOP"] },
+    //{ id: 83, name: "Yorick", roles: ["TOP"] },
     { id: 350, name: "Yuumi", roles: ["SUPPORT"] },
-    { id: 154, name: "Zac", roles: ["JUNGLE"] },
+    //{ id: 154, name: "Zac", roles: ["JUNGLE"] },
     { id: 238, name: "Zed", roles: ["MID", "TOP", "JUNGLE"] },
     { id: 221, name: "Zeri", roles: ["ADC"] },
     { id: 115, name: "Ziggs", roles: ["MID"] },
@@ -305,18 +298,14 @@ export default function WildRiftMatchupApp() {
   const champions = championBaseList.map((champ) => ({
     ...champ,
   // Use special override if we have it, otherwise fall back to champ.id
-  cdragonId: championIconIds[champ.name] ?? champ.id,
+    cdragonId: : champ.id ?? -1,//championIconIds[champ.name] ?? champ.id,
   }));
-  /*const champions = championBaseList.map((champ) => ({
-    ...champ,
-    cdragonId: championIconIds[champ.name],
-  }));*/
 
-  const championIdByName = Object.fromEntries(
+  /*const championIdByName = Object.fromEntries(
     champions.map(({ name, id }) => [name, id])
   );
 
-  const idOf = (name) => championIdByName[name];
+  const idOf = (name) => championIdByName[name];*/
 
   const buildDefaultMatchups = () =>
     champions.reduce((acc, champ) => {
