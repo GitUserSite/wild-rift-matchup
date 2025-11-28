@@ -606,7 +606,7 @@ export default function WildRiftMatchupApp() {
           ) : (
             <div className="max-h-[60vh] flex flex-col sm:flex-row gap-3 sm:gap-4">
               {/* Current patch column */}
-              <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1">
+              <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
                 {counters.map((counter, index) => {
                   const counterMainName = getChampionMainName(
                     counter.name,
@@ -698,7 +698,7 @@ export default function WildRiftMatchupApp() {
 
               {/* Previous patch column */}
               {showPreviousPatch && (
-                <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1">
+                <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
                   {previousCounters.length === 0 ? (
                     <div className="text-sm text-slate-400 text-center py-6">
                       {t.noPreviousPatchData}
