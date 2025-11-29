@@ -474,7 +474,7 @@ export default function WildRiftMatchupApp() {
                 : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
             }`}
         >
-          {theme === "dark" ? "Dark" : "Light"} mode
+          {theme === "dark" ? "⏾" : "✴︎"}
         </button>
       </div>
     </header>
