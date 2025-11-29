@@ -433,18 +433,29 @@ export default function WildRiftMatchupApp() {
 
   const renderTopBar = () => (
     <header className="flex items-center justify-between px-4 sm:px-8 py-4">
-      <div className="text-lg font-semibold tracking-tight">{t.appTitle}</div>
-
+      {/* App title + patch */}
+      <div className="flex items-baseline gap-2">
+        <div className="text-lg font-semibold tracking-tight">
+          {t.appTitle}
+        </div>
+        <div
+          className="text-[11px] sm:text-xs font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]"
+        >
+          {currentPatch}
+        </div>
+      </div>
+  
       {/* Language selector + theme toggle */}
       <div className="flex flex-col items-end gap-1">
         <select
           value={selectedLang}
           onChange={(e) => setSelectedLang(e.target.value)}
           className={`border rounded-xl px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
-            ${theme === "dark"
-              ? "bg-slate-900 border-slate-700 text-slate-100"
-              : "bg-white border-slate-300 text-slate-900"}
-          `}
+            ${
+              theme === "dark"
+                ? "bg-slate-900 border-slate-700 text-slate-100"
+                : "bg-white border-slate-200 text-slate-900"
+            }`}
         >
           {languages.map((lang) => (
             <option key={lang} value={lang}>
@@ -452,17 +463,18 @@ export default function WildRiftMatchupApp() {
             </option>
           ))}
         </select>
-
+  
         <button
+          type="button"
           onClick={toggleTheme}
-          className={`mt-1 h-8 w-8 rounded-full flex items-center justify-center border text-xs
-            ${theme === "dark"
-              ? "border-slate-600 text-slate-100 bg-slate-900"
-              : "border-slate-300 text-slate-900 bg-white"}
-          `}
-          aria-label="Toggle theme"
+          className={`text-[11px] sm:text-xs px-2 py-1 rounded-lg border transition
+            ${
+              theme === "dark"
+                ? "border-slate-700 text-slate-300 hover:border-sky-500 hover:text-sky-400"
+                : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
+            }`}
         >
-          {theme === "dark" ? "☾" : "☀︎"}
+          {theme === "dark" ? "Dark" : "Light"} mode
         </button>
       </div>
     </header>
