@@ -662,7 +662,7 @@ export default function WildRiftMatchupApp() {
                 {!showPreviousPatch && (
                   <>
                     {/* Current counters column */}
-                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
+                    <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
                       {counters.map((counter, index) => {
                         const counterMainName = getChampionMainName(
                           counter.name,
@@ -753,7 +753,7 @@ export default function WildRiftMatchupApp() {
                     </div>
   
                     {/* Synergy column */}
-                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
+                    <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
                       {synergies.map((ally, index) => {
                         const allyMainName = getChampionMainName(
                           ally.name,
@@ -849,7 +849,7 @@ export default function WildRiftMatchupApp() {
                 {showPreviousPatch && (
                   <>
                     {/* Current patch column (same as before) */}
-                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
+                    <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
                       {counters.map((counter, index) => {
                         const counterMainName = getChampionMainName(
                           counter.name,
@@ -940,7 +940,7 @@ export default function WildRiftMatchupApp() {
                     </div>
   
                     {/* Previous patch column (read-only) */}
-                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
+                    <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
                       {previousCounters.length === 0 ? (
                         <div className="text-sm text-slate-400 text-center py-6">
                           {t.noPreviousPatchData}
