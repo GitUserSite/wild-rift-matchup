@@ -474,7 +474,7 @@ export default function WildRiftMatchupApp() {
                 : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
             }`}
         >
-          {theme === "dark" ? "⏾" : "✴︎"}
+          {theme === "dark" ? "🌙" : "✴︎"}
         </button>
       </div>
     </header>
@@ -677,7 +677,7 @@ export default function WildRiftMatchupApp() {
                         return (
                           <div
                             key={`current-${counter.id}`}
-                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
+                            className={`flex min-h-[72px] items-center gap-3 rounded-xl px-3 py-2 text-sm border
                               ${theme === "dark"
                                 ? "bg-slate-950/60 border-slate-800"
                                 : "bg-slate-50 border-slate-200"}
@@ -768,7 +768,7 @@ export default function WildRiftMatchupApp() {
                         return (
                           <div
                             key={`synergy-${ally.id}`}
-                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
+                            className={`flex min-h-[72px] items-center gap-3 rounded-xl px-3 py-2 text-sm border
                               ${theme === "dark"
                                 ? "bg-slate-950/60 border-slate-800"
                                 : "bg-slate-50 border-slate-200"}
@@ -864,7 +864,7 @@ export default function WildRiftMatchupApp() {
                         return (
                           <div
                             key={`current-${counter.id}`}
-                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border
+                            className={`flex min-h-[72px] items-center gap-3 rounded-xl px-3 py-2 text-sm border
                               ${theme === "dark"
                                 ? "bg-slate-950/60 border-slate-800"
                                 : "bg-slate-50 border-slate-200"}
@@ -960,7 +960,7 @@ export default function WildRiftMatchupApp() {
                           return (
                             <div
                               key={`previous-${counter.id}`}
-                              className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border opacity-80
+                              className={`flex min-h-[72px] items-center gap-3 rounded-xl px-3 py-2 text-sm border opacity-80
                                 ${theme === "dark"
                                   ? "bg-slate-950/40 border-slate-800"
                                   : "bg-slate-50 border-slate-200"}
