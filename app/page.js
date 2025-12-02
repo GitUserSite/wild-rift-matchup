@@ -10,7 +10,7 @@ export default function WildRiftMatchupApp() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
-  const [votes, setVotes] = React.useState({}); // {"champId-counterId": diff}
+  const [votes, setVotes] = React.useState({}); // {"champId-counterId": { up, down }}
   const [synergyVotes, setSynergyVotes] = React.useState({});
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
@@ -374,9 +374,12 @@ export default function WildRiftMatchupApp() {
   const handleVote = (champId, counterId, direction) => {
     const key = `${champId}-${counterId}`;
     setVotes((prev) => {
-      const current = prev[key] || 0;
-      const delta = direction === "up" ? 1 : -1;
-      return { ...prev, [key]: current + delta };
+      const current = prev[key] || { up: 0, down: 0 };
+      const updated =
+        direction === "up"
+          ? { ...current, up: current.up + 1 }
+          : { ...current, down: current.down + 1 };
+      return { ...prev, [key]: updated };
     });
   };
 
@@ -386,9 +389,12 @@ export default function WildRiftMatchupApp() {
     return [...list]
       .map((item) => {
         const key = `${champ.id}-${item.id}`;
-        const diff = votes[key] || 0;
+        const voteTotals = votes[key] || { up: 0, down: 0 };
+        const diff = (voteTotals.up || 0) - (voteTotals.down || 0);
         return {
           ...item,
+          upVotes: voteTotals.up || 0,
+          downVotes: voteTotals.down || 0,
           score: item.baseScore + diff,
         };
       })
@@ -398,9 +404,12 @@ export default function WildRiftMatchupApp() {
   const handleSynergyVote = (champId, allyId, direction) => {
     const key = `synergy-${champId}-${allyId}`;
     setSynergyVotes((prev) => {
-      const current = prev[key] || 0;
-      const delta = direction === "up" ? 1 : -1;
-      return { ...prev, [key]: current + delta };
+      const current = prev[key] || { up: 0, down: 0 };
+      const updated =
+        direction === "up"
+          ? { ...current, up: current.up + 1 }
+          : { ...current, down: current.down + 1 };
+      return { ...prev, [key]: updated };
     });
   };
   
@@ -410,19 +419,28 @@ export default function WildRiftMatchupApp() {
     return [...list]
       .map((item) => {
         const key = `synergy-${champ.id}-${item.id}`;
-        const diff = synergyVotes[key] || 0;
+        const voteTotals = synergyVotes[key] || { up: 0, down: 0 };
+        const diff = (voteTotals.up || 0) - (voteTotals.down || 0);
         return {
           ...item,
+          upVotes: voteTotals.up || 0,
+          downVotes: voteTotals.down || 0,
           score: item.baseScore + diff,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
+        };
+      })
+      .sort((a, b) => b.score - a.score);
   };
 
   const getPreviousCountersForChampion = (champ) => {
     if (!champ) return [];
     const list = previousMatchupData[champ.id] || [];
-    return [...list].sort((a, b) => b.baseScore - a.baseScore);
+    return [...list]
+      .map((item) => ({
+        ...item,
+        upVotes: 0,
+        downVotes: 0,
+      }))
+      .sort((a, b) => b.baseScore - a.baseScore);
   };
 
   const toggleTheme = () => {
@@ -719,15 +737,16 @@ export default function WildRiftMatchupApp() {
                               </div>
                             </div>
   
-                            {/* Score + vote buttons */}
-                            <div className="flex items-center gap-1">
-                              <span
-                                className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
-                                  theme === "dark" ? "text-slate-100" : "text-slate-900"
-                                }`}
-                              >
-                                {counter.score}
-                              </span>
+                            {/* Vote totals + vote buttons */}
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
+                                  {counter.upVotes}
+                                </span>
+                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
+                                  {counter.downVotes}
+                                </span>
+                              </div>
                               <div className="flex flex-col gap-0.5">
                                 <button
                                   onClick={() =>
@@ -810,15 +829,16 @@ export default function WildRiftMatchupApp() {
                               </div>
                             </div>
   
-                            {/* Score + vote buttons */}
-                            <div className="flex items-center gap-1">
-                              <span
-                                className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
-                                  theme === "dark" ? "text-slate-100" : "text-slate-900"
-                                }`}
-                              >
-                                {ally.score}
-                              </span>
+                            {/* Vote totals + vote buttons */}
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
+                                  {ally.upVotes}
+                                </span>
+                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
+                                  {ally.downVotes}
+                                </span>
+                              </div>
                               <div className="flex flex-col gap-0.5">
                                 <button
                                   onClick={() =>
@@ -906,15 +926,16 @@ export default function WildRiftMatchupApp() {
                               </div>
                             </div>
   
-                            {/* Score + vote buttons */}
-                            <div className="flex items-center gap-1">
-                              <span
-                                className={`text-xs sm:text-sm font-semibold tabular-nums mr-1 ${
-                                  theme === "dark" ? "text-slate-100" : "text-slate-900"
-                                }`}
-                              >
-                                {counter.score}
-                              </span>
+                            {/* Vote totals + vote buttons */}
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
+                                  {counter.upVotes}
+                                </span>
+                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
+                                  {counter.downVotes}
+                                </span>
+                              </div>
                               <div className="flex flex-col gap-0.5">
                                 <button
                                   onClick={() =>
@@ -1004,10 +1025,13 @@ export default function WildRiftMatchupApp() {
                                 </div>
                               </div>
   
-                              {/* Score (no voting buttons) */}
-                              <div className="flex items-center">
-                                <span className="text-xs sm:text-sm font-semibold tabular-nums text-slate-300">
-                                  {counter.baseScore}
+                              {/* Vote totals (no voting buttons) */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
+                                  {counter.upVotes}
+                                </span>
+                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
+                                  {counter.downVotes}
                                 </span>
                               </div>
                             </div>
