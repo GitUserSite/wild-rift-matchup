@@ -741,10 +741,10 @@ export default function WildRiftMatchupApp() {
                             <div className="flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  {counter.upVotes}
+                                  +{counter.upVotes}
                                 </span>
                                 <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  {counter.downVotes}
+                                  -{counter.downVotes}
                                 </span>
                               </div>
                               <div className="flex flex-col gap-0.5">
@@ -833,10 +833,10 @@ export default function WildRiftMatchupApp() {
                             <div className="flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  {ally.upVotes}
+                                  +{ally.upVotes}
                                 </span>
                                 <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  {ally.downVotes}
+                                  -{ally.downVotes}
                                 </span>
                               </div>
                               <div className="flex flex-col gap-0.5">
@@ -930,10 +930,10 @@ export default function WildRiftMatchupApp() {
                             <div className="flex items-center gap-2">
                               <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  {counter.upVotes}
+                                  +{counter.upVotes}
                                 </span>
                                 <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  {counter.downVotes}
+                                  -{counter.downVotes}
                                 </span>
                               </div>
                               <div className="flex flex-col gap-0.5">
@@ -1028,10 +1028,10 @@ export default function WildRiftMatchupApp() {
                               {/* Vote totals (no voting buttons) */}
                               <div className="flex items-center gap-2">
                                 <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  {counter.upVotes}
+                                  +{counter.upVotes}
                                 </span>
                                 <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  {counter.downVotes}
+                                  -{counter.downVotes}
                                 </span>
                               </div>
                             </div>
