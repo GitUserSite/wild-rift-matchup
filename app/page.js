@@ -683,7 +683,11 @@ export default function WildRiftMatchupApp() {
                   <button
                     type="button"
                     onClick={() => setIsReversed((prev) => !prev)}
-                    className="px-2 py-1 rounded-md border border-slate-700 bg-slate-900 text-slate-400 text-[10px] sm:text-[11px] hover:border-slate-500 hover:bg-slate-900/80 transition"
+                    className={`px-2 py-1 rounded-md border text-[10px] sm:text-[11px] transition ${
+                      theme === "dark"
+                        ? "border-slate-700 text-slate-400 bg-slate-900 hover:border-slate-500 hover:bg-slate-900/80"
+                        : "border-slate-300 text-slate-600 bg-white hover:border-slate-400 hover:bg-slate-50"
+                    }`}
                   >
                     ↑↓
                   </button>
