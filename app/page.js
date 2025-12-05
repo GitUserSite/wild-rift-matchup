@@ -445,6 +445,8 @@ export default function WildRiftMatchupApp() {
   };
 
   const applyReverse = (list) => (isReversed ? [...list].reverse() : list);
+  const getDisplayRank = (index, listLength) =>
+    isReversed ? listLength - index : index + 1;
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -698,6 +700,7 @@ export default function WildRiftMatchupApp() {
                     {/* Current counters column */}
                     <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
                       {counters.map((counter, index) => {
+                        const displayRank = getDisplayRank(index, counters.length);
                         const counterMainName = getChampionMainName(
                           counter.name,
                           selectedLang
@@ -719,7 +722,7 @@ export default function WildRiftMatchupApp() {
                           >
                             {/* Rank number */}
                             <div className="w-6 text-xs text-slate-500 text-right">
-                              #{index + 1}
+                              #{displayRank}
                             </div>
   
                             {/* Icon + name */}
@@ -790,6 +793,7 @@ export default function WildRiftMatchupApp() {
                     {/* Synergy column */}
                     <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pl-1 scroll-column">
                       {synergies.map((ally, index) => {
+                        const displayRank = getDisplayRank(index, synergies.length);
                         const allyMainName = getChampionMainName(
                           ally.name,
                           selectedLang
@@ -811,7 +815,7 @@ export default function WildRiftMatchupApp() {
                           >
                             {/* Rank number */}
                             <div className="w-6 text-xs text-slate-500 text-right">
-                              #{index + 1}
+                              #{displayRank}
                             </div>
   
                             {/* Icon + name */}
@@ -887,6 +891,7 @@ export default function WildRiftMatchupApp() {
                     {/* Current patch column (same as before) */}
                     <div className="sm:flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scroll-column">
                       {counters.map((counter, index) => {
+                        const displayRank = getDisplayRank(index, counters.length);
                         const counterMainName = getChampionMainName(
                           counter.name,
                           selectedLang
@@ -908,7 +913,7 @@ export default function WildRiftMatchupApp() {
                           >
                             {/* Rank number */}
                             <div className="w-6 text-xs text-slate-500 text-right">
-                              #{index + 1}
+                              #{displayRank}
                             </div>
   
                             {/* Icon + name */}
@@ -984,6 +989,10 @@ export default function WildRiftMatchupApp() {
                         </div>
                       ) : (
                         previousCounters.map((counter, index) => {
+                          const displayRank = getDisplayRank(
+                            index,
+                            previousCounters.length
+                          );
                           const counterMainName = getChampionMainName(
                             counter.name,
                             selectedLang
@@ -1005,7 +1014,7 @@ export default function WildRiftMatchupApp() {
                             >
                               {/* Rank number */}
                               <div className="w-6 text-xs text-slate-500 text-right">
-                                #{index + 1}
+                                #{displayRank}
                               </div>
   
                               {/* Icon + name */}
