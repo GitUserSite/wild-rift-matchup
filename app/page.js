@@ -14,6 +14,7 @@ export default function WildRiftMatchupApp() {
   const [synergyVotes, setSynergyVotes] = React.useState({});
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
+  const [isReversed, setIsReversed] = React.useState(false);
 
   const currentPatch = "v6.3d";
 
@@ -443,6 +444,8 @@ export default function WildRiftMatchupApp() {
       .sort((a, b) => b.baseScore - a.baseScore);
   };
 
+  const applyReverse = (list) => (isReversed ? [...list].reverse() : list);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
@@ -579,9 +582,13 @@ export default function WildRiftMatchupApp() {
   const renderChampionCounters = () => {
     if (!selectedChampion) return null;
   
-    const counters = getCountersForChampion(selectedChampion);
-    const previousCounters = getPreviousCountersForChampion(selectedChampion);
-    const synergies = getSynergiesForChampion(selectedChampion);
+    const countersBase = getCountersForChampion(selectedChampion);
+    const previousCountersBase = getPreviousCountersForChampion(selectedChampion);
+    const synergiesBase = getSynergiesForChampion(selectedChampion);
+
+    const counters = applyReverse(countersBase);
+    const previousCounters = applyReverse(previousCountersBase);
+    const synergies = applyReverse(synergiesBase);
   
     const championMainName = getChampionMainName(
       selectedChampion.name,
@@ -669,7 +676,16 @@ export default function WildRiftMatchupApp() {
             <>
               {/* Column labels (top row) */}
               <div className="flex justify-between items-baseline text-[11px] text-slate-400 mb-1 px-1">
-                <span>{t.countersLabel}</span>
+                <div className="flex items-center gap-2">
+                  <span>{t.countersLabel}</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsReversed((prev) => !prev)}
+                    className="px-2 py-1 rounded-md border border-slate-700 bg-slate-900 text-slate-400 text-[10px] sm:text-[11px] hover:border-slate-500 hover:bg-slate-900/80 transition"
+                  >
+                    ↑↓
+                  </button>
+                </div>
                 <span>
                   {showPreviousPatch ? t.previousPatchScore : t.bestSynergyLabel}
                 </span>
