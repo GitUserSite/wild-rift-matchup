@@ -20,6 +20,7 @@ export default function WildRiftMatchupApp() {
   const [authError, setAuthError] = React.useState("");
   const [authEmail, setAuthEmail] = React.useState("");
   const [authPassword, setAuthPassword] = React.useState("");
+  const [showAuthModal, setShowAuthModal] = React.useState(false);
 
   const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
   const isAdmin = !!user && user.email === ADMIN_EMAIL;
@@ -485,6 +486,7 @@ export default function WildRiftMatchupApp() {
     }
     setUser(data.user);
     setAuthPassword("");
+    setShowAuthModal(false);
   }
 
   async function handleLogout() {
@@ -495,92 +497,69 @@ export default function WildRiftMatchupApp() {
   // --- Layouts ---
 
   const renderTopBar = () => (
-    <header className="flex items-center justify-between px-4 sm:px-8 py-4">
-      {/* App title + patch */}
-      <div className="flex items-baseline gap-2">
-        <div className="text-lg font-semibold tracking-tight">
-          {t.appTitle}
-        </div>
-        <div
-          className="text-[11px] sm:text-xs font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]"
-        >
-          {currentPatch}
-        </div>
-      </div>
-  
-      {/* Language selector + theme toggle */}
-      <div className="flex flex-col items-end gap-2 w-full max-w-xl">
-        <div className="flex flex-col items-end gap-1 w-full">
-          <select
-            value={selectedLang}
-            onChange={(e) => setSelectedLang(e.target.value)}
-            className={`border rounded-xl px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
-              ${
-                theme === "dark"
-                  ? "bg-slate-900 border-slate-700 text-slate-100"
-                  : "bg-white border-slate-200 text-slate-900"
-              }`}
+    <>
+      <header className="flex items-center justify-between px-4 sm:px-8 py-4">
+        {/* App title + patch */}
+        <div className="flex items-baseline gap-2">
+          <div className="text-lg font-semibold tracking-tight">
+            {t.appTitle}
+          </div>
+          <div
+            className="text-[11px] sm:text-xs font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]"
           >
-            {languages.map((lang) => (
-              <option key={lang} value={lang}>
-                {lang}
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className={`text-[11px] sm:text-xs px-2 py-1 rounded-lg border transition
-              ${
-                theme === "dark"
-                  ? "border-slate-700 text-slate-300 hover:border-sky-500 hover:text-sky-400"
-                  : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
-              }`}
-          >
-            {theme === "dark" ? "🌙" : "✴︎"}
-          </button>
+            {currentPatch}
+          </div>
         </div>
 
-        {!user ? (
-          <form
-            onSubmit={handleAdminLogin}
-            className="flex flex-col items-end gap-1 text-[11px] sm:text-xs w-full"
-          >
-            <span
-              className={`text-[11px] sm:text-xs font-medium ${
-                theme === "dark" ? "text-slate-400" : "text-slate-600"
-              }`}
+        {/* Language selector + theme toggle */}
+        <div className="flex flex-col items-end gap-2 w-full max-w-xl">
+          <div className="flex flex-col items-end gap-1 w-full">
+            <select
+              value={selectedLang}
+              onChange={(e) => setSelectedLang(e.target.value)}
+              className={`border rounded-xl px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
+                ${
+                  theme === "dark"
+                    ? "bg-slate-900 border-slate-700 text-slate-100"
+                    : "bg-white border-slate-200 text-slate-900"
+                }`}
             >
-              Admin / User login
-            </span>
-            <div className="flex flex-wrap justify-end gap-1 w-full">
-              <input
-                type="email"
-                placeholder="Email"
-                value={authEmail}
-                onChange={(e) => setAuthEmail(e.target.value)}
-                className={`px-2 py-1 rounded-lg border text-[11px] sm:text-xs min-w-[140px] focus:outline-none focus:ring-2 focus:ring-sky-500
-                  ${
-                    theme === "dark"
-                      ? "bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                      : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
-                  }`}
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={authPassword}
-                onChange={(e) => setAuthPassword(e.target.value)}
-                className={`px-2 py-1 rounded-lg border text-[11px] sm:text-xs min-w-[120px] focus:outline-none focus:ring-2 focus:ring-sky-500
-                  ${
-                    theme === "dark"
-                      ? "bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500"
-                      : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
-                  }`}
-              />
+              {languages.map((lang) => (
+                <option key={lang} value={lang}>
+                  {lang}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`text-[11px] sm:text-xs px-2 py-1 rounded-lg border transition
+                ${
+                  theme === "dark"
+                    ? "border-slate-700 text-slate-300 hover:border-sky-500 hover:text-sky-400"
+                    : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
+                }`}
+            >
+              {theme === "dark" ? "🌙" : "✴︎"}
+            </button>
+          </div>
+
+          {!user ? (
+            <div className="flex flex-col items-end gap-1 text-[11px] sm:text-xs w-full">
+              <span
+                className={`text-[11px] sm:text-xs font-medium ${
+                  theme === "dark" ? "text-slate-400" : "text-slate-600"
+                }`}
+              >
+                Admin / User login
+              </span>
               <button
-                type="submit"
+                type="button"
+                onClick={() => {
+                  setAuthError("");
+                  setShowAuthModal(true);
+                }}
                 className={`px-3 py-1 rounded-lg border font-semibold transition text-[11px] sm:text-xs
                   ${
                     theme === "dark"
@@ -591,42 +570,131 @@ export default function WildRiftMatchupApp() {
                 Login
               </button>
             </div>
-            {authError && (
-              <div className="text-[11px] text-red-400">{authError}</div>
-            )}
-          </form>
-        ) : (
-          <div className="flex flex-col items-end gap-1 text-[11px] sm:text-xs">
-            <div className="flex items-center gap-2">
-              <span
-                className={
-                  theme === "dark" ? "text-slate-200" : "text-slate-800"
-                }
-              >
-                Logged in as {user.email}
-              </span>
-              {isAdmin && (
-                <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-400 text-slate-900 shadow-sm">
-                  ADMIN
+          ) : (
+            <div className="flex flex-col items-end gap-1 text-[11px] sm:text-xs">
+              <div className="flex items-center gap-2">
+                <span
+                  className={
+                    theme === "dark" ? "text-slate-200" : "text-slate-800"
+                  }
+                >
+                  Logged in as {user.email}
                 </span>
-              )}
+                {isAdmin && (
+                  <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-400 text-slate-900 shadow-sm">
+                    ADMIN
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className={`px-3 py-1 rounded-lg border font-semibold transition text-[11px] sm:text-xs
+                  ${
+                    theme === "dark"
+                      ? "border-slate-700 text-slate-100 hover:border-sky-500 hover:text-sky-300"
+                      : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
+                  }`}
+              >
+                Logout
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className={`px-3 py-1 rounded-lg border font-semibold transition text-[11px] sm:text-xs
-                ${
-                  theme === "dark"
-                    ? "border-slate-700 text-slate-100 hover:border-sky-500 hover:text-sky-300"
-                    : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
-                }`}
-            >
-              Logout
-            </button>
+          )}
+        </div>
+      </header>
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+          <div
+            className={`w-full max-w-xs rounded-2xl shadow-2xl border px-5 py-4 flex flex-col gap-3
+              ${
+                theme === "dark"
+                  ? "bg-slate-900 border-slate-800 text-slate-100"
+                  : "bg-white border-slate-200 text-slate-900"
+              }`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold">Admin / User login</span>
+                <span
+                  className={
+                    theme === "dark" ? "text-slate-400 text-xs" : "text-slate-500 text-xs"
+                  }
+                >
+                  Sign in with your email and password.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAuthModal(false)}
+                className={`text-xs px-2 py-1 rounded-md border transition self-start
+                  ${
+                    theme === "dark"
+                      ? "border-slate-700 text-slate-200 hover:border-sky-500 hover:text-sky-300"
+                      : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
+                  }`}
+              >
+                ✕
+              </button>
+            </div>
+            <form className="flex flex-col gap-2" onSubmit={handleAdminLogin}>
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
+                  ${
+                    theme === "dark"
+                      ? "bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-500"
+                      : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                  }`}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                className={`px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
+                  ${
+                    theme === "dark"
+                      ? "bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-500"
+                      : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                  }`}
+              />
+              {authError && (
+                <div className="text-xs text-red-400">{authError}</div>
+              )}
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(false)}
+                  className={`px-3 py-1.5 rounded-lg border text-sm transition
+                    ${
+                      theme === "dark"
+                        ? "border-slate-700 text-slate-200 hover:border-sky-500 hover:text-sky-300"
+                        : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
+                    }`}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`px-3 py-1.5 rounded-lg border font-semibold transition text-sm
+                    ${
+                      theme === "dark"
+                        ? "border-slate-700 text-slate-100 hover:border-sky-500 hover:text-sky-300"
+                        : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
+                    }`}
+                >
+                  Login
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-      </div>
-    </header>
+        </div>
+      )}
+    </>
   );
 
   const renderHome = () => (
