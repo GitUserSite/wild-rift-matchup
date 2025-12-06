@@ -547,13 +547,6 @@ export default function WildRiftMatchupApp() {
 
           {!user ? (
             <div className="flex flex-col items-end gap-1 text-[11px] sm:text-xs w-full">
-              <span
-                className={`text-[11px] sm:text-xs font-medium ${
-                  theme === "dark" ? "text-slate-400" : "text-slate-600"
-                }`}
-              >
-                Admin / User login
-              </span>
               <button
                 type="button"
                 onClick={() => {
