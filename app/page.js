@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { supabase } from "../lib/supabaseClient";
 import { championLocalizedNames } from "./championLocalizedNames";
 
 // Wild Rift Matchup – v2.1 with champion images
@@ -15,6 +16,13 @@ export default function WildRiftMatchupApp() {
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
   const [isReversed, setIsReversed] = React.useState(false);
+  const [user, setUser] = React.useState(null);
+  const [authError, setAuthError] = React.useState("");
+  const [authEmail, setAuthEmail] = React.useState("");
+  const [authPassword, setAuthPassword] = React.useState("");
+
+  const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
+  const isAdmin = !!user && user.email === ADMIN_EMAIL;
 
   const currentPatch = "v6.3d";
 
@@ -153,6 +161,18 @@ export default function WildRiftMatchupApp() {
     { id: "ADC" },
     { id: "SUPPORT" },
   ];
+
+  React.useEffect(() => {
+    async function loadUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.warn("Supabase getUser error", error.message);
+        return;
+      }
+      setUser(data.user ?? null);
+    }
+    loadUser();
+  }, []);
 
   const COMMUNITY_DRAGON_BASE = "https://raw.communitydragon.org/latest";
 
@@ -452,6 +472,26 @@ export default function WildRiftMatchupApp() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
+  async function handleAdminLogin(e) {
+    e.preventDefault();
+    setAuthError("");
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: authPassword,
+    });
+    if (error) {
+      setAuthError(error.message);
+      return;
+    }
+    setUser(data.user);
+    setAuthPassword("");
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUser(null);
+  }
+
   // --- Layouts ---
 
   const renderTopBar = () => (
@@ -469,36 +509,122 @@ export default function WildRiftMatchupApp() {
       </div>
   
       {/* Language selector + theme toggle */}
-      <div className="flex flex-col items-end gap-1">
-        <select
-          value={selectedLang}
-          onChange={(e) => setSelectedLang(e.target.value)}
-          className={`border rounded-xl px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
-            ${
-              theme === "dark"
-                ? "bg-slate-900 border-slate-700 text-slate-100"
-                : "bg-white border-slate-200 text-slate-900"
-            }`}
-        >
-          {languages.map((lang) => (
-            <option key={lang} value={lang}>
-              {lang}
-            </option>
-          ))}
-        </select>
-  
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className={`text-[11px] sm:text-xs px-2 py-1 rounded-lg border transition
-            ${
-              theme === "dark"
-                ? "border-slate-700 text-slate-300 hover:border-sky-500 hover:text-sky-400"
-                : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
-            }`}
-        >
-          {theme === "dark" ? "🌙" : "✴︎"}
-        </button>
+      <div className="flex flex-col items-end gap-2 w-full max-w-xl">
+        <div className="flex flex-col items-end gap-1 w-full">
+          <select
+            value={selectedLang}
+            onChange={(e) => setSelectedLang(e.target.value)}
+            className={`border rounded-xl px-3 py-1 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500
+              ${
+                theme === "dark"
+                  ? "bg-slate-900 border-slate-700 text-slate-100"
+                  : "bg-white border-slate-200 text-slate-900"
+              }`}
+          >
+            {languages.map((lang) => (
+              <option key={lang} value={lang}>
+                {lang}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className={`text-[11px] sm:text-xs px-2 py-1 rounded-lg border transition
+              ${
+                theme === "dark"
+                  ? "border-slate-700 text-slate-300 hover:border-sky-500 hover:text-sky-400"
+                  : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-600"
+              }`}
+          >
+            {theme === "dark" ? "🌙" : "✴︎"}
+          </button>
+        </div>
+
+        {!user ? (
+          <form
+            onSubmit={handleAdminLogin}
+            className="flex flex-col items-end gap-1 text-[11px] sm:text-xs w-full"
+          >
+            <span
+              className={`text-[11px] sm:text-xs font-medium ${
+                theme === "dark" ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              Admin / User login
+            </span>
+            <div className="flex flex-wrap justify-end gap-1 w-full">
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                className={`px-2 py-1 rounded-lg border text-[11px] sm:text-xs min-w-[140px] focus:outline-none focus:ring-2 focus:ring-sky-500
+                  ${
+                    theme === "dark"
+                      ? "bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500"
+                      : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                  }`}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                className={`px-2 py-1 rounded-lg border text-[11px] sm:text-xs min-w-[120px] focus:outline-none focus:ring-2 focus:ring-sky-500
+                  ${
+                    theme === "dark"
+                      ? "bg-slate-900 border-slate-700 text-slate-100 placeholder:text-slate-500"
+                      : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
+                  }`}
+              />
+              <button
+                type="submit"
+                className={`px-3 py-1 rounded-lg border font-semibold transition text-[11px] sm:text-xs
+                  ${
+                    theme === "dark"
+                      ? "border-slate-700 text-slate-100 hover:border-sky-500 hover:text-sky-300"
+                      : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
+                  }`}
+              >
+                Login
+              </button>
+            </div>
+            {authError && (
+              <div className="text-[11px] text-red-400">{authError}</div>
+            )}
+          </form>
+        ) : (
+          <div className="flex flex-col items-end gap-1 text-[11px] sm:text-xs">
+            <div className="flex items-center gap-2">
+              <span
+                className={
+                  theme === "dark" ? "text-slate-200" : "text-slate-800"
+                }
+              >
+                Logged in as {user.email}
+              </span>
+              {isAdmin && (
+                <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-amber-400 text-slate-900 shadow-sm">
+                  ADMIN
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className={`px-3 py-1 rounded-lg border font-semibold transition text-[11px] sm:text-xs
+                ${
+                  theme === "dark"
+                    ? "border-slate-700 text-slate-100 hover:border-sky-500 hover:text-sky-300"
+                    : "border-slate-200 text-slate-700 hover:border-sky-500 hover:text-sky-700"
+                }`}
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
