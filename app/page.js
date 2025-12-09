@@ -11,7 +11,8 @@ export default function WildRiftMatchupApp() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
-  const [votes, setVotes] = React.useState({}); // {"champId-counterId-type": diff}
+  const [votes, setVotes] = React.useState({}); // { "champId-counterId": { up, down } }
+  const [synergyVotes, setSynergyVotes] = React.useState({});
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
   const [isReversed, setIsReversed] = React.useState(false);
@@ -176,17 +177,38 @@ export default function WildRiftMatchupApp() {
 
   React.useEffect(() => {
     async function loadVotes() {
-      const { data, error } = await supabase.from("votes").select("*");
+      const { data, error } = await supabase
+        .from("votes")
+        .select("champion_id, opponent_id, relation_type, up_votes, down_votes");
+
       if (error) {
         console.warn("Supabase votes load error", error.message);
         return;
       }
+      
       const loadedVotes = {};
+      const loadedSynergyVotes = {};
+
       (data || []).forEach((row) => {
-        const key = `${row.champion_id}-${row.opponent_id}-${row.relation_type}`;
-        loadedVotes[key] = row.score_diff;
+        if (row.relation_type === "counter") {
+          const key = `${row.champion_id}-${row.opponent_id}`;
+          loadedVotes[key] = {
+            up: row.up_votes ?? 0,
+            down: row.down_votes ?? 0,
+          };
+        }
+
+        if (row.relation_type === "synergy") {
+          const key = `synergy-${row.champion_id}-${row.opponent_id}`;
+          loadedSynergyVotes[key] = {
+            up: row.up_votes ?? 0,
+            down: row.down_votes ?? 0,
+          };
+        }
       });
+
       setVotes(loadedVotes);
+      setSynergyVotes(loadedSynergyVotes);
     }
 
     loadVotes();
@@ -410,27 +432,37 @@ export default function WildRiftMatchupApp() {
     return searchStrings.some((s) => s.includes(term));
   });
 
-  const handleVote = async (champId, counterId, direction) => {
-    const key = `${champId}-${counterId}-counter`;
-    let nextValue = 0;
+  const handleVote = (champId, counterId, direction) => {
+    const key = `${champId}-${counterId}`;
+    let nextUp = 0;
+    let nextDown = 0;
     setVotes((prev) => {
-      const current = prev[key] || 0;
-      const delta = direction === "up" ? 1 : -1;
-      nextValue = current + delta;
-      return { ...prev, [key]: nextValue };
+      const current = prev[key] || { up: 0, down: 0 };
+      const updated =
+        direction === "up"
+          ? { ...current, up: current.up + 1 }
+          : { ...current, down: current.down + 1 };
+      nextUp = updated.up;
+      nextDown = updated.down;
+      return { ...prev, [key]: updated };
     });
 
     const relation_type = "counter";
-    const { error } = await supabase.from("votes").upsert({
-      champion_id: champId,
-      opponent_id: counterId,
-      relation_type,
-      score_diff: nextValue,
-    });
-
-    if (error) {
-      console.warn("Supabase counter vote save error", error.message);
-    }
+    supabase
+      .from("votes")
+      .upsert({
+        champion_id: champId,
+        opponent_id: counterId,
+        relation_type,
+        up_votes: nextUp,
+        down_votes: nextDown,
+        score_diff: nextUp - nextDown,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn("Supabase upsert votes (counter) failed", error.message);
+        }
+      });
   };
 
   const getCountersForChampion = (champ) => {
@@ -438,39 +470,51 @@ export default function WildRiftMatchupApp() {
     const list = matchupData[champ.id] || [];
     return [...list]
       .map((item) => {
-        const key = `${champ.id}-${item.id}-counter`;
-        const diff = votes[key] || 0;
+        const key = `${champ.id}-${item.id}`;
+        const voteTotals = votes[key] || { up: 0, down: 0 };
+        const diff = (voteTotals.up || 0) - (voteTotals.down || 0);
+
         return {
           ...item,
-          upVotes: diff > 0 ? diff : 0,
-          downVotes: diff < 0 ? -diff : 0,
+          upVotes: voteTotals.up || 0,
+          downVotes: voteTotals.down || 0,
           score: item.baseScore + diff,
         };
       })
       .sort((a, b) => b.score - a.score); // highest score (best counter) on top
   };
 
-  const handleSynergyVote = async (champId, allyId, direction) => {
-    const key = `${champId}-${allyId}-synergy`;
-    let nextValue = 0;
-    setVotes((prev) => {
-      const current = prev[key] || 0;
-      const delta = direction === "up" ? 1 : -1;
-      nextValue = current + delta;
-      return { ...prev, [key]: nextValue };
+  const handleSynergyVote = (champId, allyId, direction) => {
+    const key = `synergy-${champId}-${allyId}`;
+    let nextUp = 0;
+    let nextDown = 0;
+    setSynergyVotes((prev) => {
+      const current = prev[key] || { up: 0, down: 0 };
+      const updated =
+        direction === "up"
+          ? { ...current, up: current.up + 1 }
+          : { ...current, down: current.down + 1 };
+      nextUp = updated.up;
+      nextDown = updated.down;
+      return { ...prev, [key]: updated };
     });
 
     const relation_type = "synergy";
-    const { error } = await supabase.from("votes").upsert({
-      champion_id: champId,
-      opponent_id: allyId,
-      relation_type,
-      score_diff: nextValue,
-    });
-
-    if (error) {
-      console.warn("Supabase synergy vote save error", error.message);
-    }
+    supabase
+      .from("votes")
+      .upsert({
+        champion_id: champId,
+        opponent_id: allyId,
+        relation_type,
+        up_votes: nextUp,
+        down_votes: nextDown,
+        score_diff: nextUp - nextDown,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn("Supabase upsert votes (synergy) failed", error.message);
+        }
+      });
   };
 
   const getSynergiesForChampion = (champ) => {
@@ -478,12 +522,14 @@ export default function WildRiftMatchupApp() {
     const list = matchupData[champ.id] || [];
     return [...list]
       .map((item) => {
-        const key = `${champ.id}-${item.id}-synergy`;
-        const diff = votes[key] || 0;
+        const key = `synergy-${champ.id}-${item.id}`;
+        const voteTotals = synergyVotes[key] || { up: 0, down: 0 };
+        const diff = (voteTotals.up || 0) - (voteTotals.down || 0);
+
         return {
           ...item,
-          upVotes: diff > 0 ? diff : 0,
-          downVotes: diff < 0 ? -diff : 0,
+          upVotes: voteTotals.up || 0,
+          downVotes: voteTotals.down || 0,
           score: item.baseScore + diff,
         };
       })
