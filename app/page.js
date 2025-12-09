@@ -185,7 +185,7 @@ export default function WildRiftMatchupApp() {
         console.warn("Supabase votes load error", error.message);
         return;
       }
-
+      
       const loadedVotes = {};
       const loadedSynergyVotes = {};
 
@@ -473,6 +473,7 @@ export default function WildRiftMatchupApp() {
         const key = `${champ.id}-${item.id}`;
         const voteTotals = votes[key] || { up: 0, down: 0 };
         const diff = (voteTotals.up || 0) - (voteTotals.down || 0);
+
         return {
           ...item,
           upVotes: voteTotals.up || 0,
@@ -524,6 +525,7 @@ export default function WildRiftMatchupApp() {
         const key = `synergy-${champ.id}-${item.id}`;
         const voteTotals = synergyVotes[key] || { up: 0, down: 0 };
         const diff = (voteTotals.up || 0) - (voteTotals.down || 0);
+
         return {
           ...item,
           upVotes: voteTotals.up || 0,
