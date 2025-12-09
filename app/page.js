@@ -11,7 +11,7 @@ export default function WildRiftMatchupApp() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
-  const [votes, setVotes] = React.useState({}); // {"champId-counterId": { up, down }}
+  const [votes, setVotes] = React.useState({}); // { "champId-counterId": { up, down } }
   const [synergyVotes, setSynergyVotes] = React.useState({});
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
@@ -173,6 +173,45 @@ export default function WildRiftMatchupApp() {
       setUser(data.user ?? null);
     }
     loadUser();
+  }, []);
+
+  React.useEffect(() => {
+    async function loadVotes() {
+      const { data, error } = await supabase
+        .from("votes")
+        .select("champion_id, opponent_id, relation_type, up_votes, down_votes");
+
+      if (error) {
+        console.warn("Supabase votes load error", error.message);
+        return;
+      }
+
+      const loadedVotes = {};
+      const loadedSynergyVotes = {};
+
+      (data || []).forEach((row) => {
+        if (row.relation_type === "counter") {
+          const key = `${row.champion_id}-${row.opponent_id}`;
+          loadedVotes[key] = {
+            up: row.up_votes ?? 0,
+            down: row.down_votes ?? 0,
+          };
+        }
+
+        if (row.relation_type === "synergy") {
+          const key = `synergy-${row.champion_id}-${row.opponent_id}`;
+          loadedSynergyVotes[key] = {
+            up: row.up_votes ?? 0,
+            down: row.down_votes ?? 0,
+          };
+        }
+      });
+
+      setVotes(loadedVotes);
+      setSynergyVotes(loadedSynergyVotes);
+    }
+
+    loadVotes();
   }, []);
 
   const COMMUNITY_DRAGON_BASE = "https://raw.communitydragon.org/latest";
@@ -395,14 +434,35 @@ export default function WildRiftMatchupApp() {
 
   const handleVote = (champId, counterId, direction) => {
     const key = `${champId}-${counterId}`;
+    let nextUp = 0;
+    let nextDown = 0;
     setVotes((prev) => {
       const current = prev[key] || { up: 0, down: 0 };
       const updated =
         direction === "up"
           ? { ...current, up: current.up + 1 }
           : { ...current, down: current.down + 1 };
+      nextUp = updated.up;
+      nextDown = updated.down;
       return { ...prev, [key]: updated };
     });
+
+    const relation_type = "counter";
+    supabase
+      .from("votes")
+      .upsert({
+        champion_id: champId,
+        opponent_id: counterId,
+        relation_type,
+        up_votes: nextUp,
+        down_votes: nextDown,
+        score_diff: nextUp - nextDown,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn("Supabase upsert votes (counter) failed", error.message);
+        }
+      });
   };
 
   const getCountersForChampion = (champ) => {
@@ -425,16 +485,37 @@ export default function WildRiftMatchupApp() {
 
   const handleSynergyVote = (champId, allyId, direction) => {
     const key = `synergy-${champId}-${allyId}`;
+    let nextUp = 0;
+    let nextDown = 0;
     setSynergyVotes((prev) => {
       const current = prev[key] || { up: 0, down: 0 };
       const updated =
         direction === "up"
           ? { ...current, up: current.up + 1 }
           : { ...current, down: current.down + 1 };
+      nextUp = updated.up;
+      nextDown = updated.down;
       return { ...prev, [key]: updated };
     });
+
+    const relation_type = "synergy";
+    supabase
+      .from("votes")
+      .upsert({
+        champion_id: champId,
+        opponent_id: allyId,
+        relation_type,
+        up_votes: nextUp,
+        down_votes: nextDown,
+        score_diff: nextUp - nextDown,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn("Supabase upsert votes (synergy) failed", error.message);
+        }
+      });
   };
-  
+
   const getSynergiesForChampion = (champ) => {
     if (!champ) return [];
     const list = matchupData[champ.id] || [];
