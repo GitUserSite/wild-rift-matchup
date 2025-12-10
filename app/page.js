@@ -25,7 +25,7 @@ export default function WildRiftMatchupApp() {
   const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
   const isAdmin = !!user && user.email === ADMIN_EMAIL;
 
-  const currentPatch = "v6.3d";
+  const currentPatch = "v6.3e";
 
   // Simple translations for core UI text
   const translations = {
