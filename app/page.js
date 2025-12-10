@@ -12,7 +12,7 @@ export default function WildRiftMatchupApp() {
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
   const [votes, setVotes] = React.useState({}); // { "champId-opponentId": { up, down } }
-  const [synergyVotes, setSynergyVotes] = React.useState({}); // { "synergy-champId-allyId": { up, down } }
+  const [synergyVotes, setSynergyVotes] = React.useState({}); // { "champId-allyId": { up, down } }
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
   const [isReversed, setIsReversed] = React.useState(false);
@@ -179,35 +179,33 @@ export default function WildRiftMatchupApp() {
     async function loadVotes() {
       const { data, error } = await supabase
         .from("votes")
-        .select(
-          "champion_id, opponent_id, relation_type, up_votes, down_votes"
-        );
-  
+        .select("champion_id, opponent_id, relation_type, up_votes, down_votes");
+
       if (error) {
         console.warn("Supabase votes load error", error.message);
         return;
       }
-  
-      const loadedVotes = {};
+
+      const loadedCounterVotes = {};
       const loadedSynergyVotes = {};
-  
+
       (data || []).forEach((row) => {
         const up = row.up_votes ?? 0;
         const down = row.down_votes ?? 0;
-  
+
         if (row.relation_type === "counter") {
           const key = `${row.champion_id}-${row.opponent_id}`;
-          loadedVotes[key] = { up, down };
+          loadedCounterVotes[key] = { up, down };
         } else if (row.relation_type === "synergy") {
-          const key = `synergy-${row.champion_id}-${row.opponent_id}`;
+          const key = `${row.champion_id}-${row.opponent_id}`;
           loadedSynergyVotes[key] = { up, down };
         }
       });
-  
-      setVotes(loadedVotes);
+
+      setVotes(loadedCounterVotes);
       setSynergyVotes(loadedSynergyVotes);
     }
-  
+
     loadVotes();
   }, []);
 
@@ -491,7 +489,7 @@ export default function WildRiftMatchupApp() {
     const relation_type = "synergy";
   
     setSynergyVotes((prev) => {
-      const key = `synergy-${champId}-${allyId}`;
+      const key = `${champId}-${allyId}`;
       const current = prev[key] || { up: 0, down: 0 };
   
       const updated =
@@ -527,10 +525,10 @@ export default function WildRiftMatchupApp() {
   const getSynergiesForChampion = (champ) => {
     if (!champ) return [];
     const list = matchupData[champ.id] || [];
-  
+
     return [...list]
       .map((item) => {
-        const key = `synergy-${champ.id}-${item.id}`;
+        const key = `${champ.id}-${item.id}`;
         const v = synergyVotes[key] || { up: 0, down: 0 };
         const diff = v.up - v.down;
   
