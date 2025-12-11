@@ -11,8 +11,7 @@ export default function WildRiftMatchupApp() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
-  const [votes, setVotes] = React.useState({}); // { "champId-opponentId": { up, down } }
-  const [synergyVotes, setSynergyVotes] = React.useState({}); // { "champId-allyId": { up, down } }
+  const [voteTotals, setVoteTotals] = React.useState({}); // { "relation:champId-opponentId": { up, down } }
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
   const [isReversed, setIsReversed] = React.useState(false);
@@ -186,24 +185,16 @@ export default function WildRiftMatchupApp() {
         return;
       }
 
-      const loadedCounterVotes = {};
-      const loadedSynergyVotes = {};
+      const aggregatedVotes = {};
 
       (data || []).forEach((row) => {
         const up = row.up_votes ?? 0;
         const down = row.down_votes ?? 0;
-
-        if (row.relation_type === "counter") {
-          const key = `${row.champion_id}-${row.opponent_id}`;
-          loadedCounterVotes[key] = { up, down };
-        } else if (row.relation_type === "synergy") {
-          const key = `${row.champion_id}-${row.opponent_id}`;
-          loadedSynergyVotes[key] = { up, down };
-        }
+        const key = `${row.relation_type}:${row.champion_id}-${row.opponent_id}`;
+        aggregatedVotes[key] = { up, down };
       });
 
-      setVotes(loadedCounterVotes);
-      setSynergyVotes(loadedSynergyVotes);
+      setVoteTotals(aggregatedVotes);
     }
 
     loadVotes();
@@ -427,42 +418,58 @@ export default function WildRiftMatchupApp() {
     return searchStrings.some((s) => s.includes(term));
   });
 
-  const handleVote = (champId, counterId, direction) => {
-    const relation_type = "counter";
-  
-    setVotes((prev) => {
-      const key = `${champId}-${counterId}`;
+  const makeVoteKey = (relationType, champId, opponentId) =>
+    `${relationType}:${champId}-${opponentId}`;
+
+  const getVotePair = (relationType, champId, opponentId) => {
+    const key = makeVoteKey(relationType, champId, opponentId);
+    return voteTotals[key] || { up: 0, down: 0 };
+  };
+
+  const persistVoteTotals = (relationType, champId, opponentId, updated) => {
+    const scoreDiff = updated.up - updated.down;
+
+    supabase
+      .from("votes")
+      .upsert({
+        champion_id: champId,
+        opponent_id: opponentId,
+        relation_type: relationType,
+        up_votes: updated.up,
+        down_votes: updated.down,
+        score_diff: scoreDiff,
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.warn(
+            `Supabase upsert votes (${relationType}) failed`,
+            error.message
+          );
+        }
+      });
+  };
+
+  const updateVote = (relationType, champId, opponentId, direction) => {
+    setVoteTotals((prev) => {
+      const key = makeVoteKey(relationType, champId, opponentId);
       const current = prev[key] || { up: 0, down: 0 };
-  
+
       const updated =
         direction === "up"
           ? { up: current.up + 1, down: current.down }
           : { up: current.up, down: current.down + 1 };
-  
-      const scoreDiff = updated.up - updated.down;
-  
-      // Persist to Supabase using the same updated values
-      supabase
-        .from("votes")
-        .upsert({
-          champion_id: champId,
-          opponent_id: counterId,
-          relation_type,
-          up_votes: updated.up,
-          down_votes: updated.down,
-          score_diff: scoreDiff,
-        })
-        .then(({ error }) => {
-          if (error) {
-            console.warn("Supabase upsert votes (counter) failed", error.message);
-          }
-        });
-  
+
+      persistVoteTotals(relationType, champId, opponentId, updated);
+
       return {
         ...prev,
         [key]: updated,
       };
     });
+  };
+
+  const handleVote = (champId, counterId, direction) => {
+    updateVote("counter", champId, counterId, direction);
   };
 
   const getCountersForChampion = (champ) => {
@@ -471,10 +478,9 @@ export default function WildRiftMatchupApp() {
   
     return [...list]
       .map((item) => {
-        const key = `${champ.id}-${item.id}`;
-        const v = votes[key] || { up: 0, down: 0 };
+        const v = getVotePair("counter", champ.id, item.id);
         const diff = v.up - v.down;
-  
+
         return {
           ...item,
           upVotes: v.up,
@@ -486,40 +492,7 @@ export default function WildRiftMatchupApp() {
   };
 
   const handleSynergyVote = (champId, allyId, direction) => {
-    const relation_type = "synergy";
-  
-    setSynergyVotes((prev) => {
-      const key = `${champId}-${allyId}`;
-      const current = prev[key] || { up: 0, down: 0 };
-  
-      const updated =
-        direction === "up"
-          ? { up: current.up + 1, down: current.down }
-          : { up: current.up, down: current.down + 1 };
-  
-      const scoreDiff = updated.up - updated.down;
-  
-      supabase
-        .from("votes")
-        .upsert({
-          champion_id: champId,
-          opponent_id: allyId,
-          relation_type,
-          up_votes: updated.up,
-          down_votes: updated.down,
-          score_diff: scoreDiff,
-        })
-        .then(({ error }) => {
-          if (error) {
-            console.warn("Supabase upsert votes (synergy) failed", error.message);
-          }
-        });
-  
-      return {
-        ...prev,
-        [key]: updated,
-      };
-    });
+    updateVote("synergy", champId, allyId, direction);
   };
 
   const getSynergiesForChampion = (champ) => {
@@ -528,10 +501,9 @@ export default function WildRiftMatchupApp() {
 
     return [...list]
       .map((item) => {
-        const key = `${champ.id}-${item.id}`;
-        const v = synergyVotes[key] || { up: 0, down: 0 };
+        const v = getVotePair("synergy", champ.id, item.id);
         const diff = v.up - v.down;
-  
+
         return {
           ...item,
           upVotes: v.up,
