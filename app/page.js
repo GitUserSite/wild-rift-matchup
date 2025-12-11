@@ -426,27 +426,40 @@ export default function WildRiftMatchupApp() {
     return voteTotals[key] || { up: 0, down: 0 };
   };
 
-  const persistVoteTotals = (relationType, champId, opponentId, updated) => {
+  const persistVoteTotals = async (
+    relationType,
+    champId,
+    opponentId,
+    updated
+  ) => {
     const scoreDiff = updated.up - updated.down;
 
-    supabase
+    const { error } = await supabase
       .from("votes")
-      .upsert({
-        champion_id: champId,
-        opponent_id: opponentId,
-        relation_type: relationType,
-        up_votes: updated.up,
-        down_votes: updated.down,
-        score_diff: scoreDiff,
-      })
-      .then(({ error }) => {
-        if (error) {
-          console.warn(
-            `Supabase upsert votes (${relationType}) failed`,
-            error.message
-          );
-        }
-      });
+      .upsert(
+        {
+          champion_id: champId,
+          opponent_id: opponentId,
+          relation_type: relationType,
+          up_votes: updated.up,
+          down_votes: updated.down,
+          score_diff: scoreDiff,
+        },
+        { onConflict: "champion_id,opponent_id,relation_type" }
+      );
+
+    if (error) {
+      console.error(
+        "Supabase upsert votes failed",
+        {
+          relationType,
+          champId,
+          opponentId,
+          updatedTotals: updated,
+        },
+        error.message
+      );
+    }
   };
 
   const updateVote = (relationType, champId, opponentId, direction) => {
