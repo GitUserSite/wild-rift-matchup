@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
-    "next": "latest",
+    "next": "16.0.10",
     "react": "latest",
     "react-dom": "latest"
   },
