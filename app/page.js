@@ -12,6 +12,9 @@ export default function WildRiftMatchupApp() {
   const [selectedLane, setSelectedLane] = React.useState("ALL");
   const [selectedChampion, setSelectedChampion] = React.useState(null); // null = homepage
   const [voteTotals, setVoteTotals] = React.useState({}); // { "relation:champId-opponentId": { up, down } }
+  const [editingVoteKey, setEditingVoteKey] = React.useState(null);
+  const [editUp, setEditUp] = React.useState("");
+  const [editDown, setEditDown] = React.useState("");
   const [theme, setTheme] = React.useState("dark"); // "dark" | "light"
   const [showPreviousPatch, setShowPreviousPatch] = React.useState(false);
   const [isReversed, setIsReversed] = React.useState(false);
@@ -24,7 +27,9 @@ export default function WildRiftMatchupApp() {
   const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "";
   const isAdmin = !!user && user.email === ADMIN_EMAIL;
 
-  const currentPatch = "v6.3e";
+  const [patchLabel, setPatchLabel] = React.useState("v6.3e");
+  const [isEditingPatch, setIsEditingPatch] = React.useState(false);
+  const [patchInput, setPatchInput] = React.useState("v6.3e");
 
   // Simple translations for core UI text
   const translations = {
@@ -198,6 +203,28 @@ export default function WildRiftMatchupApp() {
     }
 
     loadVotes();
+  }, []);
+
+  React.useEffect(() => {
+    async function loadPatchLabel() {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("setting_value")
+        .eq("setting_key", "current_patch")
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Supabase app_settings load error", error.message);
+        return;
+      }
+
+      if (data?.setting_value) {
+        setPatchLabel(data.setting_value);
+        setPatchInput(data.setting_value);
+      }
+    }
+
+    loadPatchLabel();
   }, []);
 
   const COMMUNITY_DRAGON_BASE = "https://raw.communitydragon.org/latest";
@@ -548,6 +575,138 @@ export default function WildRiftMatchupApp() {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
+  const renderVoteControls = (
+    relationType,
+    champId,
+    opponentId,
+    upVotes,
+    downVotes,
+    onUpVote,
+    onDownVote
+  ) => {
+    const key = makeVoteKey(relationType, champId, opponentId);
+    const isEditing = editingVoteKey === key;
+
+    if (isEditing) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              min="0"
+              value={editUp}
+              onChange={(e) => setEditUp(e.target.value)}
+              className={`w-14 px-2 py-1 rounded-md border text-xs ${
+                theme === "dark"
+                  ? "border-slate-700 bg-slate-900 text-slate-100"
+                  : "border-slate-300 bg-white text-slate-900"
+              }`}
+            />
+            <input
+              type="number"
+              min="0"
+              value={editDown}
+              onChange={(e) => setEditDown(e.target.value)}
+              className={`w-14 px-2 py-1 rounded-md border text-xs ${
+                theme === "dark"
+                  ? "border-slate-700 bg-slate-900 text-slate-100"
+                  : "border-slate-300 bg-white text-slate-900"
+              }`}
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => saveVoteEdit(relationType, champId, opponentId)}
+              className={`text-[11px] px-2 py-1 rounded-md border hover:bg-emerald-400/10 ${
+                theme === "dark"
+                  ? "border-emerald-400 text-emerald-300"
+                  : "border-emerald-500 text-emerald-600"
+              }`}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={cancelVoteEdit}
+              className={`text-[11px] px-2 py-1 rounded-md border hover:border-slate-500 ${
+                theme === "dark"
+                  ? "border-slate-700 text-slate-300"
+                  : "border-slate-300 text-slate-700"
+              }`}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
+            +{upVotes}
+          </span>
+          <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
+            -{downVotes}
+          </span>
+        </div>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => startVoteEdit(relationType, champId, opponentId)}
+            className="h-6 w-6 flex items-center justify-center rounded-md border border-slate-600 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+          >
+            ✎
+          </button>
+        )}
+        <div className="flex flex-col gap-0.5">
+          <button
+            onClick={onUpVote}
+            className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+          >
+            ▲
+          </button>
+          <button
+            onClick={onDownVote}
+            className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
+          >
+            ▼
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const startVoteEdit = (relationType, champId, opponentId) => {
+    const current = getVotePair(relationType, champId, opponentId);
+    const key = makeVoteKey(relationType, champId, opponentId);
+    setEditingVoteKey(key);
+    setEditUp(String(current.up ?? 0));
+    setEditDown(String(current.down ?? 0));
+  };
+
+  const saveVoteEdit = async (relationType, champId, opponentId) => {
+    const key = makeVoteKey(relationType, champId, opponentId);
+    const upParsed = parseInt(editUp, 10);
+    const downParsed = parseInt(editDown, 10);
+    const up = Math.max(0, Number.isFinite(upParsed) ? upParsed : 0);
+    const down = Math.max(0, Number.isFinite(downParsed) ? downParsed : 0);
+
+    setVoteTotals((prev) => ({
+      ...prev,
+      [key]: { up, down },
+    }));
+
+    await persistVoteTotals(relationType, champId, opponentId, { up, down });
+    setEditingVoteKey(null);
+  };
+
+  const cancelVoteEdit = () => {
+    setEditingVoteKey(null);
+  };
+
   async function handleAdminLogin(e) {
     e.preventDefault();
     setAuthError("");
@@ -569,6 +728,27 @@ export default function WildRiftMatchupApp() {
     setUser(null);
   }
 
+  async function savePatchLabel() {
+    const value = patchInput || "v6.3e";
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert(
+        {
+          setting_key: "current_patch",
+          setting_value: value,
+        },
+        { onConflict: "setting_key" }
+      );
+
+    if (error) {
+      console.warn("Supabase app_settings upsert error", error.message);
+      return;
+    }
+
+    setPatchLabel(value);
+    setIsEditingPatch(false);
+  }
+
   // --- Layouts ---
 
   const renderTopBar = () => (
@@ -579,10 +759,70 @@ export default function WildRiftMatchupApp() {
           <div className="text-lg font-semibold tracking-tight">
             {t.appTitle}
           </div>
-          <div
-            className="text-[11px] sm:text-xs font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]"
-          >
-            {currentPatch}
+          <div className="flex items-center gap-1">
+            {isEditingPatch ? (
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={patchInput}
+                  onChange={(e) => setPatchInput(e.target.value)}
+                  className={`text-[11px] sm:text-xs px-2 py-1 rounded-lg border ${
+                    theme === "dark"
+                      ? "border-amber-400 bg-slate-900 text-amber-200"
+                      : "border-amber-300 bg-white text-amber-700"
+                  }`}
+                />
+              <button
+                type="button"
+                onClick={savePatchLabel}
+                className={`text-[11px] sm:text-xs px-2 py-1 rounded-md border hover:bg-amber-400/10 ${
+                  theme === "dark"
+                    ? "border-amber-400 text-amber-200"
+                    : "border-amber-300 text-amber-700"
+                }`}
+              >
+                Save
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setPatchInput(patchLabel);
+                  setIsEditingPatch(false);
+                }}
+                className={`text-[11px] sm:text-xs px-2 py-1 rounded-md border hover:border-slate-500 ${
+                  theme === "dark"
+                    ? "border-slate-700 text-slate-300"
+                    : "border-slate-300 text-slate-700"
+                }`}
+              >
+                Cancel
+              </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <div
+                  className="text-[11px] sm:text-xs font-bold bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]"
+                >
+                  {patchLabel}
+                </div>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPatchInput(patchLabel);
+                      setIsEditingPatch(true);
+                    }}
+                    className={`text-[11px] sm:text-xs px-1.5 py-0.5 rounded-md border hover:bg-amber-400/10 ${
+                      theme === "dark"
+                        ? "border-amber-300 text-amber-200"
+                        : "border-amber-300 text-amber-700"
+                    }`}
+                  >
+                    ✎
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -915,7 +1155,7 @@ export default function WildRiftMatchupApp() {
             <div className="uppercase tracking-[0.16em] text-slate-500 mb-0.5">
               {t.patch}
             </div>
-            <div className="font-semibold text-sky-400 mb-1">{currentPatch}</div>
+            <div className="font-semibold text-sky-400 mb-1">{patchLabel}</div>
             <button
               type="button"
               onClick={() => setShowPreviousPatch((prev) => !prev)}
@@ -1023,34 +1263,15 @@ export default function WildRiftMatchupApp() {
                             </div>
   
                             {/* Vote totals + vote buttons */}
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  +{counter.upVotes}
-                                </span>
-                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  -{counter.downVotes}
-                                </span>
-                              </div>
-                              <div className="flex flex-col gap-0.5">
-                                <button
-                                  onClick={() =>
-                                    handleVote(selectedChampion.id, counter.id, "up")
-                                  }
-                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                                >
-                                  ▲
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleVote(selectedChampion.id, counter.id, "down")
-                                  }
-                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                                >
-                                  ▼
-                                </button>
-                              </div>
-                            </div>
+                            {renderVoteControls(
+                              "counter",
+                              selectedChampion.id,
+                              counter.id,
+                              counter.upVotes,
+                              counter.downVotes,
+                              () => handleVote(selectedChampion.id, counter.id, "up"),
+                              () => handleVote(selectedChampion.id, counter.id, "down")
+                            )}
                           </div>
                         );
                       })}
@@ -1116,34 +1337,17 @@ export default function WildRiftMatchupApp() {
                             </div>
   
                             {/* Vote totals + vote buttons */}
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  +{ally.upVotes}
-                                </span>
-                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  -{ally.downVotes}
-                                </span>
-                              </div>
-                              <div className="flex flex-col gap-0.5">
-                                <button
-                                  onClick={() =>
-                                    handleSynergyVote(selectedChampion.id, ally.id, "up")
-                                  }
-                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                                >
-                                  ▲
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleSynergyVote(selectedChampion.id, ally.id, "down")
-                                  }
-                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                                >
-                                  ▼
-                                </button>
-                              </div>
-                            </div>
+                            {renderVoteControls(
+                              "synergy",
+                              selectedChampion.id,
+                              ally.id,
+                              ally.upVotes,
+                              ally.downVotes,
+                              () =>
+                                handleSynergyVote(selectedChampion.id, ally.id, "up"),
+                              () =>
+                                handleSynergyVote(selectedChampion.id, ally.id, "down")
+                            )}
                           </div>
                         );
                       })}
@@ -1214,34 +1418,15 @@ export default function WildRiftMatchupApp() {
                             </div>
   
                             {/* Vote totals + vote buttons */}
-                            <div className="flex items-center gap-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold text-emerald-400 drop-shadow-[0_0_6px_rgba(52,211,153,0.8)]">
-                                  +{counter.upVotes}
-                                </span>
-                                <span className="text-xs font-semibold text-red-400 drop-shadow-[0_0_6px_rgba(248,113,113,0.8)]">
-                                  -{counter.downVotes}
-                                </span>
-                              </div>
-                              <div className="flex flex-col gap-0.5">
-                                <button
-                                  onClick={() =>
-                                    handleVote(selectedChampion.id, counter.id, "up")
-                                  }
-                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                                >
-                                  ▲
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleVote(selectedChampion.id, counter.id, "down")
-                                  }
-                                  className="h-5 w-6 flex items-center justify-center rounded-md border border-slate-700 text-[10px] hover:border-sky-500 hover:bg-slate-900/80"
-                                >
-                                  ▼
-                                </button>
-                              </div>
-                            </div>
+                            {renderVoteControls(
+                              "counter",
+                              selectedChampion.id,
+                              counter.id,
+                              counter.upVotes,
+                              counter.downVotes,
+                              () => handleVote(selectedChampion.id, counter.id, "up"),
+                              () => handleVote(selectedChampion.id, counter.id, "down")
+                            )}
                           </div>
                         );
                       })}
