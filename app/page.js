@@ -263,6 +263,7 @@ export default function WildRiftMatchupApp() {
     { id: 85, name: "Kennen", roles: ["TOP", "MID"] },
     { id: 121, name: "Kha'Zix", roles: ["JUNGLE"] },
     { id: 203, name: "Kindred", roles: ["JUNGLE"] },
+    { id: 96, name: "Kog'Maw", roles: ["ADC"] },
     //{ id: 7, name: "LeBlanc", roles: ["MID"] },
     { id: 64, name: "Lee Sin", roles: ["JUNGLE"] },
     { id: 876, name: "Lillia", roles: ["JUNGLE"] },
